@@ -530,7 +530,8 @@
         let bombs = [];
         let coins_list = [];
         let particles = [];
-        let startPoint, endPoint;
+        let startPoint = { x: 30, y: 180, width: 40, height: 40 };
+        let endPoint = { x: 530, y: 180, width: 40, height: 40 };
         
         // 输入
         const keys = {};
@@ -803,13 +804,15 @@
             levelTime = levelMaxTime;
             
             // 重置位置
-            startPoint = { x: 30, y: canvasHeight / 2 - 20, width: 40, height: 40 };
-            endPoint = { 
-                x: isScrolling ? worldWidth - 70 : canvasWidth - 70, 
-                y: canvasHeight / 2 - 20, 
-                width: 40, 
-                height: 40 
-            };
+            startPoint.x = 30;
+            startPoint.y = canvasHeight / 2 - 20;
+            startPoint.width = 40;
+            startPoint.height = 40;
+            
+            endPoint.x = isScrolling ? worldWidth - 70 : canvasWidth - 70;
+            endPoint.y = canvasHeight / 2 - 20;
+            endPoint.width = 40;
+            endPoint.height = 40;
             
             player.x = startPoint.x + 10;
             player.y = startPoint.y + 10;
