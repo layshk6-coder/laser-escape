@@ -634,11 +634,12 @@
         
         function closeShop() {
             document.getElementById('shopScreen').style.display = 'none';
-            // 从商店关进入下一关，不再检查商店
+            // 从商店关进入下一关
             nextLevelAfterShop();
         }
         
         function nextLevelAfterShop() {
+            gameState = 'playing'; // 确保游戏状态正确
             clearInterval(timerInterval);
             if (level >= 100) { victory(); return; }
             level++;
