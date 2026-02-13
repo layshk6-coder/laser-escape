@@ -100,21 +100,25 @@
         <button id="actionBtn">开始游戏</button>
     </div>
     
+    <!-- 关卡选择界面 -->
+    <div id="levelSelectScreen" class="screen">
+        <h2>🎯 选择起始关卡</h2>
+        <p style="color:#888">已解锁关卡: 1-<span id="selectMaxLevel">1</span></p>
+        <div style="margin:20px 0;">
+            <input type="range" id="levelSlider" min="1" max="1" value="1" style="width:250px;" oninput="document.getElementById('selectedLevel').textContent=this.value">
+            <p style="font-size:28px;color:#00d4ff;margin-top:10px;">第 <span id="selectedLevel">1</span> 关</p>
+        </div>
+        <button onclick="confirmStartLevel()">开始游戏</button>
+        <button onclick="backToMenu()" style="background:#666">返回</button>
+    </div>
+    
     <!-- 开始界面 -->
     <div id="startScreen" class="screen">
         <h2>⚡ 激光大冒险100</h2>
         <p>🎮 100关挑战 | 💣 5关后有炸弹</p>
         <p>🛒 每10关商店 | 📜 20关后卷轴</p>
         <p style="color:#ff6b6b">🔴-1 🟠-2 🟡-3 🟢-4 🔵-5</p>
-        
-        <div id="startLevelSelect" style="margin:15px 0; display:none;">
-            <p style="color:#ffd700">选择起始关卡 (1-<span id="startMaxLevel">1</span>):</p>
-            <input type="range" id="mainStartLevel" min="1" max="1" value="1" style="width:200px;" oninput="document.getElementById('mainLevelNum').textContent=this.value">
-            <p style="font-size:20px;color:#00d4ff;margin-top:5px;">第 <span id="mainLevelNum">1</span> 关</p>
-        </div>
-        
-        <button onclick="startGame()">开始挑战</button>
-        <button onclick="startFromSelectedLevel()" id="continueBtn" style="background:linear-gradient(145deg,#00d4ff,#0099cc); display:none;">继续进度</button>
+        <button onclick="showLevelSelect()">开始挑战</button>
         <button onclick="showLeaderboard()" style="background:linear-gradient(145deg,#ff6b9d,#ff4081)">🏆 排行</button>
     </div>
     
@@ -130,14 +134,9 @@
     <div id="gameOverScreen" class="screen">
         <h2 id="goTitle">游戏结束</h2>
         <p id="goStats"></p>
-        <div id="levelSelect" style="margin:15px 0;">
-            <p style="color:#ffd700">选择起始关卡 (1-<span id="maxLevel">1</span>):</p>
-            <input type="range" id="startLevel" min="1" max="1" value="1" style="width:200px;" oninput="document.getElementById('levelNum').textContent=this.value">
-            <p style="font-size:20px;color:#00d4ff;margin-top:5px;">第 <span id="levelNum">1</span> 关</p>
-        </div>
         <input type="text" id="playerName" class="name-input" placeholder="输入名字" maxlength="8"><br>
         <button onclick="submitScore()">提交分数</button>
-        <button onclick="restartFromLevel()" style="background:linear-gradient(145deg,#00d4ff,#0099cc)">从选择关卡开始</button>
+        <button onclick="showLevelSelect()" style="background:linear-gradient(145deg,#00d4ff,#0099cc)">选择关卡</button>
         <button onclick="skipSubmit()" style="background:#666">返回主菜单</button>
     </div>
     
@@ -519,8 +518,8 @@
         // ==================== 游戏控制 ====================
         
         function startGame() {
-            const startLvl = parseInt(document.getElementById('mainStartLevel')?.value || '1');
-            document.getElementById('startScreen').style.display = 'none';
+            const startLvl = parseInt(document.getElementById('levelSlider').value);
+            document.getElementById('levelSelectScreen').style.display = 'none';
             document.getElementById('gameOverScreen').style.display = 'none';
             document.getElementById('actionBtn').textContent = '重新开始';
             gameState = 'playing';
@@ -539,8 +538,24 @@
             }, 1000);
         }
         
-        function startFromSelectedLevel() {
+        function showLevelSelect() {
+            const maxLvl = Math.max(1, maxLevelReached);
+            document.getElementById('selectMaxLevel').textContent = maxLvl;
+            document.getElementById('levelSlider').max = maxLvl;
+            document.getElementById('levelSlider').value = 1;
+            document.getElementById('selectedLevel').textContent = '1';
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('levelSelectScreen').style.display = 'block';
+        }
+        
+        function confirmStartLevel() {
             startGame();
+        }
+        
+        function backToMenu() {
+            document.getElementById('levelSelectScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
         }
         
         function levelComplete() {
@@ -566,13 +581,6 @@
             document.getElementById('goTitle').textContent = '游戏结束';
             document.getElementById('goTitle').style.color = '#ff6b6b';
             document.getElementById('goStats').innerHTML = `关卡: ${level}/100<br>用时: ${Math.floor(totalTime/60)}分${totalTime%60}秒<br>金币: ${coins}`;
-            
-            // 更新关卡选择器
-            const maxLvl = Math.max(1, maxLevelReached);
-            document.getElementById('maxLevel').textContent = maxLvl;
-            document.getElementById('startLevel').max = maxLvl;
-            document.getElementById('startLevel').value = 1;
-            document.getElementById('levelNum').textContent = '1';
             
             document.getElementById('gameOverScreen').style.display = 'block';
         }
@@ -631,25 +639,7 @@
         }
         
         function restartFromLevel() {
-            const startLvl = parseInt(document.getElementById('startLevel').value);
-            document.getElementById('gameOverScreen').style.display = 'none';
-            document.getElementById('actionBtn').textContent = '重新开始';
-            gameState = 'playing';
-            level = startLvl;
-            lives = 5;
-            totalTime = 0;
-            Object.keys(items).forEach(k => items[k] = 0);
-            Object.keys(keys).forEach(k => keys[k] = false); // 重置按键
-            initLevel(startLvl);
-            startGameLoop();
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                if (gameState === 'playing') {
-                    levelTime--; totalTime++;
-                    if (levelTime <= 0) gameOver();
-                    updateUI();
-                }
-            }, 1000);
+            showLevelSelect();
         }
         
         function showLeaderboard() {
@@ -674,36 +664,64 @@
         
         // ==================== 输入 ====================
         
-        document.addEventListener('keydown', e => keys[e.key] = true);
-        document.addEventListener('keyup', e => keys[e.key] = false);
+        document.addEventListener('keydown', e => { if(gameState === 'playing') keys[e.key] = true; });
+        document.addEventListener('keyup', e => { keys[e.key] = false; });
         
-        ['btnUp:ArrowUp', 'btnDown:ArrowDown', 'btnLeft:ArrowLeft', 'btnRight:ArrowRight'].forEach(s => {
-            const [id, key] = s.split(':');
+        // 触摸控制 - 修复释放问题
+        const dPadMap = {
+            'btnUp': 'ArrowUp',
+            'btnDown': 'ArrowDown', 
+            'btnLeft': 'ArrowLeft',
+            'btnRight': 'ArrowRight'
+        };
+        
+        Object.entries(dPadMap).forEach(([id, key]) => {
             const btn = document.getElementById(id);
-            const start = e => { e.preventDefault(); keys[key] = true; };
-            const end = e => { e.preventDefault(); keys[key] = false; };
-            btn.addEventListener('touchstart', start); btn.addEventListener('touchend', end);
-            btn.addEventListener('mousedown', start); btn.addEventListener('mouseup', end);
+            
+            const onPress = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if(gameState === 'playing') keys[key] = true;
+                btn.style.transform = 'scale(0.9)';
+                btn.style.background = '#0077aa';
+            };
+            
+            const onRelease = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                keys[key] = false;
+                btn.style.transform = '';
+                btn.style.background = '';
+            };
+            
+            // 触摸事件
+            btn.addEventListener('touchstart', onPress, {passive: false});
+            btn.addEventListener('touchend', onRelease, {passive: false});
+            btn.addEventListener('touchcancel', onRelease, {passive: false});
+            
+            // 鼠标事件
+            btn.addEventListener('mousedown', onPress);
+            btn.addEventListener('mouseup', onRelease);
+            btn.addEventListener('mouseleave', onRelease);
         });
         
-        document.getElementById('actionBtn').addEventListener('click', startGame);
-        document.addEventListener('touchmove', e => { if (e.target.closest('#dPad')) e.preventDefault(); }, {passive:false});
+        document.getElementById('actionBtn').addEventListener('click', () => {
+            if (gameState === 'playing') showLevelSelect();
+            else showLevelSelect();
+        });
+        
+        // 防止触摸滚动
+        document.getElementById('dPad').addEventListener('touchmove', e => e.preventDefault(), {passive: false});
         
         // 更新开始界面的关卡选择
         function updateStartScreen() {
             const maxLvl = Math.max(1, maxLevelReached);
-            document.getElementById('startMaxLevel').textContent = maxLvl;
-            document.getElementById('mainStartLevel').max = maxLvl;
-            
-            if (maxLvl > 1) {
-                document.getElementById('startLevelSelect').style.display = 'block';
-                document.getElementById('continueBtn').style.display = 'inline-block';
-            }
         }
         
         // 初始绘制和更新开始界面
         updateStartScreen();
-        initLevel(1); draw();
+        initLevel(1); 
+        draw();
     </script>
 </body>
 </html>
