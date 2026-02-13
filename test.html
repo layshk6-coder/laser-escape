@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>激光大冒险 - 测试版</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        canvas {
+            border: 3px solid #00d4ff;
+            background: #0a0a0a;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ 激光大冒险 - 测试版</h1>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <div>
+        <button onclick="startGame()">开始游戏</button>
+        <button onclick="resetGame()">重置</button>
+    </div>
+    <p id="debug">状态: 等待开始</p>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const debug = document.getElementById('debug');
+        
+        let gameState = 'waiting';
+        let level = 1;
+        let lives = 5;
+        
+        // 玩家
+        const player = { x: 50, y: 200, size: 20, speed: 3, color: '#00d4ff' };
+        
+        // 起点终点 - 初始值
+        const startPoint = { x: 30, y: 180, width: 40, height: 40 };
+        const endPoint = { x: 530, y: 180, width: 40, height: 40 };
+        
+        // 激光
+        let lasers = [];
+        
+        function initLevel(lvl) {
+            level = lvl;
+            
+            // 重置玩家位置
+            player.x = startPoint.x + 10;
+            player.y = startPoint.y + 10;
+            
+            // 生成激光
+            lasers = [];
+            const rows = 2 + Math.floor(level / 3);
+            for (let i = 0; i < rows; i++) {
+                const y = 80 + i * 80;
+                lasers.push({
+                    x: 0, y: y, width: 600, height: 4,
+                    active: false, timer: i * 500, interval: 1500
+                });
+            }
+            
+            debug.textContent = `关卡 ${level} - 激光数: ${lasers.length}`;
+        }
+        
+        function draw() {
+            // 背景
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 起点
+            ctx.fillStyle = '#00ff88';
+            ctx.fillRect(startPoint.x, startPoint.y, startPoint.width, startPoint.height);
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('起', startPoint.x + 20, startPoint.y + 25);
+            
+            // 终点
+            ctx.fillStyle = '#ff0066';
+            ctx.fillRect(endPoint.x, endPoint.y, endPoint.width, endPoint.height);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('终', endPoint.x + 20, endPoint.y + 25);
+            
+            // 激光
+            lasers.forEach(laser => {
+                ctx.fillStyle = laser.active ? '#ff0000' : 'rgba(100,0,0,0.3)';
+                ctx.fillRect(laser.x, laser.y, laser.width, laser.height);
+            });
+            
+            // 玩家
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+        }
+        
+        function update(dt) {
+            if (gameState !== 'playing') return;
+            
+            // 更新激光
+            lasers.forEach(laser => {
+                laser.timer += dt;
+                if (laser.timer >= laser.interval) {
+                    laser.active = !laser.active;
+                    laser.timer = 0;
+                }
+            });
+        }
+        
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            update(dt);
+            draw();
+            
+            if (gameState === 'playing') {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        function startGame() {
+            gameState = 'playing';
+            initLevel(1);
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+            debug.textContent = '游戏进行中 - 关卡 ' + level;
+        }
+        
+        function resetGame() {
+            gameState = 'waiting';
+            initLevel(1);
+            draw();
+            debug.textContent = '已重置 - 等待开始';
+        }
+        
+        // 初始绘制
+        initLevel(1);
+        draw();
+    </script>
+</body>
+</html>

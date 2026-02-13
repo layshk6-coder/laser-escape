@@ -519,9 +519,11 @@
             inventory: { speed: 0, shield: 0, life: 0, time: 0 }
         };
         
-        // 地图
-        let canvasWidth = 600, canvasHeight = 400;
-        let worldWidth = 600;
+        // 地图 - 固定画布大小
+        const CANVAS_WIDTH = 600;
+        const CANVAS_HEIGHT = 400;
+        let CANVAS_WIDTH = CANVAS_WIDTH, CANVAS_HEIGHT = CANVAS_HEIGHT;
+        let worldWidth = CANVAS_WIDTH;
         let cameraX = 0;
         let isScrolling = false;
         
@@ -779,38 +781,37 @@
         function initLevel(levelNum) {
             isScrolling = levelNum >= SCROLL_START_LEVEL;
             
-            // 设置画布和世界大小
+            // 使用固定画布大小
+            CANVAS_WIDTH = CANVAS_WIDTH;
+            CANVAS_HEIGHT = CANVAS_HEIGHT;
+            
             if (isScrolling) {
-                canvasWidth = 800;
-                canvasHeight = 450;
                 worldWidth = 2000 + (levelNum - SCROLL_START_LEVEL) * 200;
                 cameraX = 0;
                 document.getElementById('scrollProgress').style.display = 'inline';
             } else {
-                const scale = 1 + Math.floor((levelNum - 1) / 10) * 0.15;
-                canvasWidth = Math.min(800, 600 * scale);
-                canvasHeight = Math.min(500, 400 * scale);
-                worldWidth = canvasWidth;
+                worldWidth = CANVAS_WIDTH;
                 cameraX = 0;
                 document.getElementById('scrollProgress').style.display = 'none';
             }
             
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
+            // 固定画布大小，使用缩放而不是改变canvas尺寸
+            // canvas.width = CANVAS_WIDTH;  // 移除：会导致画布重置
+            // canvas.height = CANVAS_HEIGHT;
             
             // 重置生命和倒计时
             lives = maxLives;
             levelMaxTime = Math.max(30, 60 - Math.floor((levelNum - 1) / 10) * 3);
             levelTime = levelMaxTime;
             
-            // 重置位置
+            // 重置位置 - 使用固定画布高度
             startPoint.x = 30;
-            startPoint.y = canvasHeight / 2 - 20;
+            startPoint.y = CANVAS_HEIGHT / 2 - 20;
             startPoint.width = 40;
             startPoint.height = 40;
             
-            endPoint.x = isScrolling ? worldWidth - 70 : canvasWidth - 70;
-            endPoint.y = canvasHeight / 2 - 20;
+            endPoint.x = isScrolling ? worldWidth - 70 : CANVAS_WIDTH - 70;
+            endPoint.y = CANVAS_HEIGHT / 2 - 20;
             endPoint.width = 40;
             endPoint.height = 40;
             
@@ -854,7 +855,7 @@
                     const rows = 2 + Math.floor(levelNum / 20);
                     
                     for (let i = 0; i < rows; i++) {
-                        const y = 50 + (i + 1) * ((canvasHeight - 100) / (rows + 1));
+                        const y = 50 + (i + 1) * ((CANVAS_HEIGHT - 100) / (rows + 1));
                         const typeIdx = Math.min(Math.floor(levelNum / 15) + Math.floor(i / 2), 4);
                         const offset = (i % 2) * baseInterval / 2;
                         lasers.push(new Laser(groupX - 100, y, 200, 6, 'horizontal', baseInterval, typeIdx, offset));
@@ -864,7 +865,7 @@
                     for (let i = 0; i < 2; i++) {
                         const x = groupX + (i - 0.5) * 100;
                         const typeIdx = Math.min(Math.floor(levelNum / 15) + i, 4);
-                        lasers.push(new Laser(x, 0, 6, canvasHeight, 'vertical', baseInterval, typeIdx, i * 300));
+                        lasers.push(new Laser(x, 0, 6, CANVAS_HEIGHT, 'vertical', baseInterval, typeIdx, i * 300));
                     }
                 }
             } else {
@@ -873,7 +874,7 @@
                 const cols = Math.min(6, 2 + Math.floor(levelNum / 8));
                 
                 for (let i = 0; i < rows; i++) {
-                    const y = 40 + (i + 1) * ((canvasHeight - 80) / (rows + 1));
+                    const y = 40 + (i + 1) * ((CANVAS_HEIGHT - 80) / (rows + 1));
                     const typeIdx = Math.min(Math.floor((levelNum - 1) / 15) + Math.floor(i / 2), 4);
                     const offset = (i % 2) * baseInterval / 2;
                     lasers.push(new Laser(0, y, worldWidth, 6, 'horizontal', baseInterval, typeIdx, offset));
@@ -883,7 +884,7 @@
                     const x = 100 + (i + 0.5) * ((worldWidth - 200) / cols);
                     const typeIdx = Math.min(Math.floor((levelNum - 1) / 15) + Math.floor(i / 2), 4);
                     const offset = (i % 3) * baseInterval / 3;
-                    lasers.push(new Laser(x, 0, 6, canvasHeight, 'vertical', baseInterval, typeIdx, offset));
+                    lasers.push(new Laser(x, 0, 6, CANVAS_HEIGHT, 'vertical', baseInterval, typeIdx, offset));
                 }
             }
         }
@@ -901,7 +902,7 @@
                     } else {
                         x = 100 + Math.random() * (worldWidth - 200);
                     }
-                    y = 60 + Math.random() * (canvasHeight - 120);
+                    y = 60 + Math.random() * (CANVAS_HEIGHT - 120);
                     
                     // 确保不在起点终点附近
                     safe = (x < startPoint.x - 50 || x > startPoint.x + 90) &&
@@ -932,7 +933,7 @@
                     } else {
                         x = 100 + Math.random() * (worldWidth - 200);
                     }
-                    y = 60 + Math.random() * (canvasHeight - 120);
+                    y = 60 + Math.random() * (CANVAS_HEIGHT - 120);
                     
                     safe = (x < startPoint.x - 40 || x > startPoint.x + 80) &&
                            (x < endPoint.x - 40 || x > endPoint.x + 80);
@@ -985,11 +986,11 @@
             
             // 边界限制
             player.x = Math.max(0, Math.min(worldWidth - player.size, player.x));
-            player.y = Math.max(0, Math.min(canvasHeight - player.size, player.y));
+            player.y = Math.max(0, Math.min(CANVAS_HEIGHT - player.size, player.y));
             
             // 更新相机（卷轴模式）
             if (isScrolling) {
-                cameraX = Math.max(0, Math.min(worldWidth - canvasWidth, player.x - canvasWidth / 3));
+                cameraX = Math.max(0, Math.min(worldWidth - CANVAS_WIDTH, player.x - CANVAS_WIDTH / 3));
                 const progress = Math.floor((player.x / worldWidth) * 100);
                 document.getElementById('scrollPercent').textContent = progress;
             }
