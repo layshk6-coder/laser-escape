@@ -231,8 +231,8 @@
             }
             hit(px, py) {
                 if (!this.active) return 0;
-                const wx = px + camX;
-                return (wx < this.x + this.w && wx + player.size > this.x &&
+                // px 是 player.x（世界坐标），this.x 也是世界坐标，不需要加 camX
+                return (px < this.x + this.w && px + player.size > this.x &&
                         py < this.y + this.h && py + player.size > this.y) ? L_DAMAGE[this.typeIdx] : 0;
             }
         }
