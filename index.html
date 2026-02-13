@@ -240,10 +240,24 @@
         class Bomb {
             constructor(x, y) {
                 this.x = x; this.y = y; this.size = 22;
-                this.t = 0; this.exploding = false; this.r = 0; this.maxR = 70;
+                this.t = 0; 
+                this.fuseTime = 0; // 引信时间
+                this.fuseStarted = false;
+                this.exploding = false; 
+                this.r = 0; this.maxR = 70;
+                this.hasDamaged = false; // 是否已经造成过伤害
             }
             update(dt) {
                 this.t += dt;
+                
+                // 引信倒计时
+                if (this.fuseStarted && !this.exploding) {
+                    this.fuseTime -= dt;
+                    if (this.fuseTime <= 0) {
+                        this.exploding = true;
+                    }
+                }
+                
                 if (this.exploding) {
                     this.r += 4;
                     return this.r < this.maxR;
@@ -262,10 +276,24 @@
                     ctx.save();
                     ctx.shadowBlur = 12; ctx.shadowColor = '#ff4400';
                     ctx.fillStyle = '#333'; ctx.fillRect(sx, this.y, this.size, this.size);
-                    const flash = Math.sin(this.t/150) > 0;
-                    ctx.fillStyle = flash ? '#ff0000' : '#ff8800';
+                    
+                    // 引信启动后快速闪烁
+                    if (this.fuseStarted) {
+                        const flash = Math.sin(this.t/50) > 0;
+                        ctx.fillStyle = flash ? '#ff0000' : '#ffff00';
+                    } else {
+                        const flash = Math.sin(this.t/150) > 0;
+                        ctx.fillStyle = flash ? '#ff0000' : '#ff8800';
+                    }
+                    
                     ctx.fillRect(sx+4, this.y+4, this.size-8, this.size-8);
-                    if (this.t > 2000) {
+                    
+                    // 显示引信倒计时
+                    if (this.fuseStarted) {
+                        const cd = Math.ceil(this.fuseTime / 1000);
+                        ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center';
+                        ctx.fillText(cd, sx+11, this.y+17);
+                    } else if (this.t > 2000) {
                         const cd = Math.ceil((3000-this.t)/1000);
                         if (cd > 0) { ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center'; ctx.fillText(cd, sx+11, this.y+16); }
                     }
@@ -274,14 +302,28 @@
             }
             trigger(px, py) {
                 const dx = (px+player.size/2)-(this.x+11), dy = (py+player.size/2)-(this.y+11);
-                if (Math.sqrt(dx*dx+dy*dy) < this.maxR && !this.exploding) {
-                    this.exploding = true; return true;
+                const dist = Math.sqrt(dx*dx+dy*dy);
+                
+                // 进入触发范围，启动引信
+                if (dist < this.maxR && !this.fuseStarted && !this.exploding) {
+                    this.fuseStarted = true;
+                    this.fuseTime = 800; // 800ms延迟引爆
+                    return true;
                 }
                 return false;
             }
             hit(px, py) {
-                if (!this.exploding) return 0;
+                // 只有爆炸扩散阶段才造成伤害，且只造成一次
+                if (!this.exploding || this.hasDamaged) return 0;
+                
                 const dx = (px+player.size/2)-(this.x+11), dy = (py+player.size/2)-(this.y+11);
+                if (Math.sqrt(dx*dx+dy*dy) < this.r) {
+                    this.hasDamaged = true; // 标记已造成伤害
+                    return 2;
+                }
+                return 0;
+            }
+        }
                 return Math.sqrt(dx*dx+dy*dy) < this.r ? 2 : 0;
             }
         }
