@@ -76,6 +76,7 @@
         table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
         th { background: rgba(255, 107, 157, 0.2); padding: 8px; color: #ff6b9d; }
         td { padding: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        #lbContent { max-height: 280px; overflow-y: auto; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -719,14 +720,21 @@
             if (lb.length === 0) {
                 c.innerHTML = '<p style="color:#888">暂无记录</p>';
             } else {
+                // 只显示前7名
+                const displayLb = lb.slice(0, 7);
                 let html = '<table><tr><th>排名</th><th>玩家</th><th>关卡</th><th>用时</th></tr>';
-                lb.forEach((e,i) => {
-                    const m = Math.floor(e.time/60), s = e.time%60;
-                    html += `<tr><td>${i<3?['🥇','🥈','🥉'][i]:i+1}</td><td>${e.name}</td><td>${e.level}</td><td>${m}分${s}秒</td></tr>`;
+                displayLb.forEach((e, i) => {
+                    const m = Math.floor(e.time / 60), s = e.time % 60;
+                    html += `<tr><td>${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</td><td>${e.name}</td><td>${e.level}</td><td>${m}分${s}秒</td></tr>`;
                 });
-                c.innerHTML = html + '</table>';
+                html += '</table>';
+                if (lb.length > 7) {
+                    html += `<p style="color:#888;font-size:11px;margin-top:5px;">...还有${lb.length - 7}条记录</p>`;
+                }
+                c.innerHTML = html;
             }
             document.getElementById('lbScreen').style.display = 'block';
+        }
         }
         
         function hideLeaderboard() {
