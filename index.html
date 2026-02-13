@@ -522,7 +522,6 @@
         // 地图 - 固定画布大小
         const CANVAS_WIDTH = 600;
         const CANVAS_HEIGHT = 400;
-        let CANVAS_WIDTH = CANVAS_WIDTH, CANVAS_HEIGHT = CANVAS_HEIGHT;
         let worldWidth = CANVAS_WIDTH;
         let cameraX = 0;
         let isScrolling = false;
@@ -782,8 +781,7 @@
             isScrolling = levelNum >= SCROLL_START_LEVEL;
             
             // 使用固定画布大小
-            CANVAS_WIDTH = CANVAS_WIDTH;
-            CANVAS_HEIGHT = CANVAS_HEIGHT;
+            // CANVAS_WIDTH 和 CANVAS_HEIGHT 是常量，不需要重新赋值
             
             if (isScrolling) {
                 worldWidth = 2000 + (levelNum - SCROLL_START_LEVEL) * 200;
