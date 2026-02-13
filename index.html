@@ -3,374 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>⚡ 激光大冒险100 - Laser Escape</title>
+    <title>⚡ 激光大冒险100</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: none;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; }
         body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #16213e 100%);
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
             font-family: 'Microsoft YaHei', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 8px;
-            overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 10px; overflow: hidden;
         }
-        
         #gameTitle {
-            color: #00d4ff;
-            text-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff;
-            font-size: 20px;
-            margin-bottom: 8px;
-            animation: pulse 2s infinite;
+            color: #00d4ff; text-shadow: 0 0 20px #00d4ff;
+            font-size: 22px; margin-bottom: 8px;
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
         #gameInfo {
-            display: flex;
-            gap: 10px;
-            color: #fff;
-            margin-bottom: 8px;
-            font-size: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: flex; gap: 12px; color: #fff; margin-bottom: 8px;
+            font-size: 13px; flex-wrap: wrap; justify-content: center;
         }
-        
         .info-item {
-            background: rgba(0, 212, 255, 0.15);
-            padding: 4px 10px;
-            border-radius: 15px;
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            background: rgba(0, 212, 255, 0.15); padding: 4px 10px;
+            border-radius: 15px; border: 1px solid rgba(0, 212, 255, 0.3);
         }
-        
-        #lives { color: #ff6b6b; }
-        #timer { color: #ffd93d; }
-        #level { color: #6bcf7f; }
-        #coins { color: #ffd700; }
-        #scrollProgress { color: #ff6b9d; display: none; }
-        
         #gameCanvas {
-            border: 2px solid #00d4ff;
-            border-radius: 8px;
+            border: 2px solid #00d4ff; border-radius: 8px;
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-            background: #0a0a0a;
-            max-width: 100%;
-            max-height: 50vh;
+            background: #0a0a0a; max-width: 100%; max-height: 50vh;
         }
-        
-        #controls {
-            margin-top: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        #dPad {
-            display: grid;
-            grid-template-columns: repeat(3, 50px);
-            grid-template-rows: repeat(3, 50px);
-            gap: 3px;
-        }
-        
+        #controls { margin-top: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        #dPad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 3px; }
         .dBtn {
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(145deg, #00d4ff, #0099cc);
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 3px 10px rgba(0, 212, 255, 0.4);
-            transition: all 0.1s;
-            user-select: none;
+            width: 50px; height: 50px; border: none; border-radius: 8px;
+            background: linear-gradient(145deg, #00d4ff, #0099cc); color: white;
+            font-size: 20px; cursor: pointer; user-select: none;
         }
-        
-        .dBtn:active, .dBtn.pressed {
-            transform: scale(0.92);
-            box-shadow: 0 1px 5px rgba(0, 212, 255, 0.4);
-        }
-        
+        .dBtn:active { transform: scale(0.92); }
         #btnUp { grid-column: 2; grid-row: 1; }
         #btnLeft { grid-column: 1; grid-row: 2; }
         #btnRight { grid-column: 3; grid-row: 2; }
         #btnDown { grid-column: 2; grid-row: 3; }
-        
-        #actionBtn, #shopBtn {
-            padding: 8px 25px;
-            font-size: 14px;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
+        button {
+            padding: 8px 25px; font-size: 14px; border: none; border-radius: 20px;
+            cursor: pointer; margin: 0 5px;
         }
-        
-        #actionBtn {
-            background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
-            color: white;
-            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4);
-        }
-        
-        #shopBtn {
-            background: linear-gradient(145deg, #ffd700, #ffaa00);
-            color: #333;
-            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
-        }
-        
-        #actionBtn:hover, #shopBtn:hover {
-            transform: scale(1.05);
-        }
-        
-        #instructions {
-            color: #888;
-            font-size: 10px;
-            text-align: center;
-            margin-top: 4px;
-            line-height: 1.4;
-        }
-        
-        .laser-legend {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 4px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 10px;
-            color: #aaa;
-        }
-        
-        .laser-dot {
-            width: 10px;
-            height: 3px;
-            border-radius: 2px;
-        }
-        
+        #actionBtn { background: linear-gradient(145deg, #ff6b6b, #ee5a5a); color: white; }
         .screen {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: white;
-            background: rgba(10, 10, 20, 0.98);
-            padding: 20px;
-            border-radius: 15px;
-            border: 2px solid #00d4ff;
-            display: none;
-            z-index: 100;
-            max-width: 92vw;
-            max-height: 90vh;
-            overflow-y: auto;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; color: white; background: rgba(10, 10, 20, 0.98);
+            padding: 25px; border-radius: 15px; border: 2px solid #00d4ff;
+            display: none; z-index: 100; max-width: 90vw; max-height: 90vh; overflow-y: auto;
         }
-        
-        .screen h2 {
-            color: #00d4ff;
-            margin-bottom: 12px;
-            font-size: 20px;
-        }
-        
-        .screen p {
-            margin: 6px 0;
-            font-size: 12px;
-        }
-        
-        .screen button {
-            margin-top: 12px;
-            padding: 8px 20px;
-            font-size: 14px;
-            border: none;
-            border-radius: 20px;
-            background: linear-gradient(145deg, #00d4ff, #0099cc);
-            color: white;
-            cursor: pointer;
-        }
-        
+        .screen h2 { color: #00d4ff; margin-bottom: 15px; font-size: 22px; }
+        .screen p { margin: 8px 0; font-size: 13px; }
+        .screen button { background: linear-gradient(145deg, #00d4ff, #0099cc); color: white; }
         #startScreen { display: block; }
-        
-        /* 商店样式 */
-        #shopScreen h2 {
-            color: #ffd700;
-        }
-        
-        #shopScreen {
-            border-color: #ffd700;
-        }
-        
-        .shop-items {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
         .shop-item {
-            background: rgba(255, 215, 0, 0.1);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            border-radius: 10px;
-            padding: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px; padding: 12px; margin: 8px; cursor: pointer; display: inline-block;
         }
-        
-        .shop-item:hover {
-            background: rgba(255, 215, 0, 0.2);
-            transform: scale(1.02);
-        }
-        
-        .shop-item .icon {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        
-        .shop-item .name {
-            font-size: 12px;
-            font-weight: bold;
-            color: #ffd700;
-        }
-        
-        .shop-item .price {
-            font-size: 11px;
-            color: #ff6b6b;
-        }
-        
-        .shop-item .desc {
-            font-size: 9px;
-            color: #aaa;
-            margin-top: 3px;
-        }
-        
-        .shop-coins {
-            font-size: 16px;
-            color: #ffd700;
-            margin-bottom: 10px;
-        }
-        
-        /* 排行榜样式 */
-        #leaderboardScreen h2 {
-            color: #ff6b9d;
-        }
-        
-        #leaderboardScreen {
-            border-color: #ff6b9d;
-            min-width: 300px;
-        }
-        
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 11px;
-        }
-        
-        .leaderboard-table th {
-            background: rgba(255, 107, 157, 0.2);
-            padding: 8px 5px;
-            color: #ff6b9d;
-        }
-        
-        .leaderboard-table td {
-            padding: 6px 5px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .leaderboard-table tr:nth-child(even) {
-            background: rgba(255, 255, 255, 0.03);
-        }
-        
-        .rank-1 { color: #ffd700; font-weight: bold; }
-        .rank-2 { color: #c0c0c0; font-weight: bold; }
-        .rank-3 { color: #cd7f32; font-weight: bold; }
-        
-        /* 输入框样式 */
+        .shop-item:hover { background: rgba(255, 215, 0, 0.2); }
         .name-input {
-            padding: 10px 15px;
-            font-size: 14px;
-            border: 2px solid #00d4ff;
-            border-radius: 25px;
-            background: rgba(0, 212, 255, 0.1);
-            color: white;
-            text-align: center;
-            margin: 10px 0;
-            width: 200px;
+            padding: 10px 15px; font-size: 14px; border: 2px solid #00d4ff; border-radius: 20px;
+            background: rgba(0, 212, 255, 0.1); color: white; text-align: center; margin: 10px 0;
         }
-        
-        .name-input::placeholder {
-            color: #666;
-        }
-        
-        /* 道具栏 */
-        #inventory {
-            display: flex;
-            gap: 5px;
-            margin-top: 5px;
-            justify-content: center;
-        }
-        
-        .item-slot {
-            width: 30px;
-            height: 30px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            background: rgba(0, 0, 0, 0.3);
-            position: relative;
-        }
-        
-        .item-slot .count {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            background: #ff6b6b;
-            color: white;
-            font-size: 9px;
-            padding: 1px 4px;
-            border-radius: 8px;
-        }
-        
-        /* 眩晕效果 */
-        @keyframes dizzy {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
-        }
-        
-        .dizzy {
-            animation: dizzy 0.5s ease-in-out;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+        th { background: rgba(255, 107, 157, 0.2); padding: 8px; color: #ff6b9d; }
+        td { padding: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
 <body>
-    <h1 id="gameTitle">⚡ 激光大冒险 100</h1>
-    
+    <h1 id="gameTitle">⚡ 激光大冒险100</h1>
     <div id="gameInfo">
         <span class="info-item">❤️ <span id="lives">5</span></span>
         <span class="info-item">⏱️ <span id="timer">60</span>s</span>
         <span class="info-item">🎯 <span id="level">1</span>/100</span>
         <span class="info-item">🪙 <span id="coins">0</span></span>
-        <span class="info-item" id="scrollProgress">📜 <span id="scrollPercent">0</span>%</span>
+        <span class="info-item" id="progressBox" style="display:none">📜 <span id="progress">0</span>%</span>
     </div>
-    
-    <div id="inventory"></div>
     
     <canvas id="gameCanvas" width="600" height="400"></canvas>
     
@@ -381,1071 +89,475 @@
             <button class="dBtn" id="btnRight">▶</button>
             <button class="dBtn" id="btnDown">▼</button>
         </div>
-        <div style="display:flex;gap:10px">
-            <button id="actionBtn">开始游戏</button>
-            <button id="shopBtn" onclick="showShop()" style="display:none">🛒 商店</button>
-        </div>
-    </div>
-    
-    <p id="instructions">
-        💡 电脑：方向键/WASD | 手机：点击方向按钮<br>
-        🎯 躲避激光和炸弹，收集金币到达终点！<br>
-        💣 炸弹会爆炸并眩晕 | 🛒 每10关进入商店
-    </p>
-    
-    <div class="laser-legend">
-        <div class="legend-item"><div class="laser-dot" style="background:#ff0000"></div>-1</div>
-        <div class="legend-item"><div class="laser-dot" style="background:#ff8800"></div>-2</div>
-        <div class="legend-item"><div class="laser-dot" style="background:#ffdd00"></div>-3</div>
-        <div class="legend-item"><div class="laser-dot" style="background:#00ff00"></div>-4</div>
-        <div class="legend-item"><div class="laser-dot" style="background:#0088ff"></div>-5</div>
-        <div class="legend-item">💣 炸弹</div>
-        <div class="legend-item">🪙 金币</div>
+        <button id="actionBtn">开始游戏</button>
     </div>
     
     <!-- 开始界面 -->
     <div id="startScreen" class="screen">
-        <h2>⚡ 激光大冒险 100</h2>
-        <p>🎮 100个关卡等你挑战！</p>
-        <p>❤️ 每关5条生命，时间单独计算</p>
-        <p>💣 躲避炸弹，收集金币</p>
-        <p>🛒 每10关进入商店购买道具</p>
-        <p>📜 20关后开始横版卷轴关卡</p>
-        <p style="font-size:11px;color:#ff6b6b;margin-top:10px">🔴-1 🟠-2 🟡-3 🟢-4 🔵-5</p>
+        <h2>⚡ 激光大冒险100</h2>
+        <p>🎮 100关挑战 | 💣 躲避炸弹</p>
+        <p>🛒 每10关商店 | 📜 20关后卷轴</p>
+        <p style="color:#ff6b6b">🔴-1 🟠-2 🟡-3 🟢-4 🔵-5</p>
         <button onclick="startGame()">开始挑战</button>
-        <button onclick="showLeaderboard()" style="margin-left:10px;background:linear-gradient(145deg,#ff6b9d,#ff4081)">🏆 排行榜</button>
+        <button onclick="showLeaderboard()" style="background:linear-gradient(145deg,#ff6b9d,#ff4081)">🏆 排行</button>
     </div>
     
     <!-- 商店界面 -->
     <div id="shopScreen" class="screen">
-        <h2>🛒 道具商店</h2>
-        <div class="shop-coins">🪙 金币: <span id="shopCoins">0</span></div>
-        <div class="shop-items">
-            <div class="shop-item" onclick="buyItem('speed')">
-                <div class="icon">⚡</div>
-                <div class="name">加速靴</div>
-                <div class="price">🪙 10</div>
-                <div class="desc">移动速度+50%</div>
-            </div>
-            <div class="shop-item" onclick="buyItem('shield')">
-                <div class="icon">🛡️</div>
-                <div class="name">防护盾</div>
-                <div class="price">🪙 15</div>
-                <div class="desc">抵挡一次伤害</div>
-            </div>
-            <div class="shop-item" onclick="buyItem('life')">
-                <div class="icon">❤️</div>
-                <div class="name">生命药水</div>
-                <div class="price">🪙 8</div>
-                <div class="desc">恢复2条生命</div>
-            </div>
-            <div class="shop-item" onclick="buyItem('time')">
-                <div class="icon">⏱️</div>
-                <div class="name">时间沙漏</div>
-                <div class="price">🪙 12</div>
-                <div class="desc">+30秒时间</div>
-            </div>
-        </div>
-        <button onclick="closeShop()">继续游戏</button>
+        <h2>🛒 商店</h2>
+        <p style="color:#ffd700;font-size:16px">🪙 <span id="shopCoins">0</span></p>
+        <div id="shopItems"></div>
+        <button onclick="closeShop()">继续</button>
     </div>
     
-    <!-- 游戏结束界面 -->
+    <!-- 游戏结束 -->
     <div id="gameOverScreen" class="screen">
-        <h2 id="gameOverTitle">游戏结束</h2>
-        <p id="gameOverMessage"></p>
-        <p id="finalStats"></p>
-        <input type="text" id="playerName" class="name-input" placeholder="输入你的名字" maxlength="10">
-        <div style="margin-top:15px">
-            <button onclick="submitScore()">提交分数</button>
-            <button onclick="skipSubmit()" style="margin-left:10px;background:#666">跳过</button>
-        </div>
+        <h2 id="goTitle">游戏结束</h2>
+        <p id="goStats"></p>
+        <input type="text" id="playerName" class="name-input" placeholder="输入名字" maxlength="8"><br>
+        <button onclick="submitScore()">提交</button>
+        <button onclick="skipSubmit()" style="background:#666">跳过</button>
     </div>
     
-    <!-- 排行榜界面 -->
-    <div id="leaderboardScreen" class="screen">
+    <!-- 排行榜 -->
+    <div id="lbScreen" class="screen">
         <h2>🏆 排行榜</h2>
-        <div id="leaderboardContent"></div>
+        <div id="lbContent"></div>
         <button onclick="hideLeaderboard()">返回</button>
     </div>
-    
+
     <script>
-        // 获取画布
+        // 基础设置
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        
-        // 游戏常量
-        const TOTAL_LEVELS = 100;
-        const SHOP_LEVELS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
-        const SCROLL_START_LEVEL = 20;
-        
-        // 激光类型配置
-        const LASER_TYPES = [
-            { color: '#ff0000', damage: 1, name: 'red' },
-            { color: '#ff8800', damage: 2, name: 'orange' },
-            { color: '#ffdd00', damage: 3, name: 'yellow' },
-            { color: '#00ff00', damage: 4, name: 'green' },
-            { color: '#0088ff', damage: 5, name: 'blue' }
-        ];
-        
-        // 商店道具
-        const SHOP_ITEMS = {
-            speed: { name: '加速靴', price: 10, icon: '⚡' },
-            shield: { name: '防护盾', price: 15, icon: '🛡️' },
-            life: { name: '生命药水', price: 8, icon: '❤️' },
-            time: { name: '时间沙漏', price: 12, icon: '⏱️' }
-        };
+        const W = 600, H = 400;
         
         // 游戏状态
         let gameState = 'start';
-        let level = 1;
-        let lives = 5;
-        let maxLives = 5;
-        let coins = 0;
-        let levelTime = 60;
-        let levelMaxTime = 60;
-        let totalTime = 0;
-        let lastTime = 0;
+        let level = 1, lives = 5, coins = 0;
+        let levelTime = 60, totalTime = 0;
+        let lastTime = 0, timerInterval = null;
+        let isScrolling = false, worldW = W, camX = 0;
         
         // 玩家
-        const player = {
-            x: 50, y: 200,
-            size: 18,
-            speed: 4,
-            baseSpeed: 4,
-            color: '#00d4ff',
-            trail: [],
-            dizzy: 0,
-            shield: 0,
-            inventory: { speed: 0, shield: 0, life: 0, time: 0 }
-        };
+        const player = { x: 50, y: 180, size: 18, speed: 4, dizzy: 0, shield: 0 };
         
-        // 地图 - 固定画布大小
-        const CANVAS_WIDTH = 600;
-        const CANVAS_HEIGHT = 400;
-        let worldWidth = CANVAS_WIDTH;
-        let cameraX = 0;
-        let isScrolling = false;
+        // 起点终点
+        const startPt = { x: 30, y: 180, w: 40, h: 40 };
+        const endPt = { x: 530, y: 180, w: 40, h: 40 };
         
-        // 游戏对象
-        let lasers = [];
-        let bombs = [];
-        let coins_list = [];
-        let particles = [];
-        let startPoint = { x: 30, y: 180, width: 40, height: 40 };
-        let endPoint = { x: 530, y: 180, width: 40, height: 40 };
+        // 游戏对象数组
+        let lasers = [], bombs = [], coinList = [], particles = [];
+        
+        // 道具库存
+        const items = { speed: 0, shield: 0, life: 0, time: 0 };
         
         // 输入
         const keys = {};
         
-        // 排行榜数据（本地存储）
-        let leaderboard = JSON.parse(localStorage.getItem('laserEscape100_leaderboard') || '[]');
+        // 激光颜色
+        const L_COLORS = ['#ff0000', '#ff8800', '#ffdd00', '#00ff00', '#0088ff'];
+        const L_DAMAGE = [1, 2, 3, 4, 5];
         
-        // 粒子类
-        class Particle {
-            constructor(x, y, color, speed = 3) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
-                this.vx = (Math.random() - 0.5) * speed * 2;
-                this.vy = (Math.random() - 0.5) * speed * 2;
-                this.life = 30;
-                this.size = Math.random() * 4 + 2;
+        // 排行榜
+        let lb = JSON.parse(localStorage.getItem('lb100') || '[]');
+        
+        // ==================== 类定义 ====================
+        
+        class Laser {
+            constructor(x, y, w, h, typeIdx, interval, offset) {
+                this.x = x; this.y = y; this.w = w; this.h = h;
+                this.typeIdx = typeIdx; this.active = false;
+                this.timer = offset || 0; this.interval = interval;
             }
-            
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life--;
-                this.size *= 0.95;
+            update(dt, lvl) {
+                this.timer += dt;
+                const spd = 1 + (lvl - 1) * 0.08;
+                if (this.timer >= this.interval / spd) {
+                    this.active = !this.active; this.timer = 0;
+                }
             }
-            
-            draw(ctx, camX = 0) {
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.life / 30;
-                ctx.fillRect(this.x - camX, this.y, this.size, this.size);
-                ctx.globalAlpha = 1;
+            draw() {
+                const sx = this.x - camX;
+                if (sx + this.w < 0 || sx > W) return;
+                ctx.save();
+                const c = L_COLORS[this.typeIdx];
+                if (this.active) {
+                    ctx.shadowBlur = 20; ctx.shadowColor = c;
+                    ctx.fillStyle = c; ctx.fillRect(sx, this.y, this.w, this.h);
+                } else {
+                    ctx.fillStyle = c + '40';
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeStyle = c + '60';
+                    ctx.fillRect(sx, this.y, this.w, this.h);
+                    ctx.strokeRect(sx, this.y, this.w, this.h);
+                }
+                ctx.restore();
+            }
+            hit(px, py) {
+                if (!this.active) return 0;
+                const wx = px + camX;
+                return (wx < this.x + this.w && wx + player.size > this.x &&
+                        py < this.y + this.h && py + player.size > this.y) ? L_DAMAGE[this.typeIdx] : 0;
             }
         }
         
-        // 炸弹类
         class Bomb {
             constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.size = 25;
-                this.timer = 0;
-                this.exploding = false;
-                this.explosionRadius = 0;
-                this.maxRadius = 80;
-                this.damage = 2;
+                this.x = x; this.y = y; this.size = 22;
+                this.t = 0; this.exploding = false; this.r = 0; this.maxR = 70;
             }
-            
-            update(deltaTime) {
-                this.timer += deltaTime;
-                
-                // 闪烁效果
-                if (this.timer > 2000 && !this.exploding) {
-                    // 2秒后开始爆炸倒计时
-                }
-                
+            update(dt) {
+                this.t += dt;
                 if (this.exploding) {
-                    this.explosionRadius += 5;
-                    if (this.explosionRadius >= this.maxRadius) {
-                        return false; // 爆炸结束
-                    }
+                    this.r += 4;
+                    return this.r < this.maxR;
                 }
-                
                 return true;
             }
-            
-            draw(ctx, camX = 0) {
-                const screenX = this.x - camX;
-                
+            draw() {
+                const sx = this.x - camX;
+                if (sx + this.size < 0 || sx > W) return;
                 if (this.exploding) {
-                    // 爆炸效果
-                    const gradient = ctx.createRadialGradient(
-                        screenX + this.size/2, this.y + this.size/2, 0,
-                        screenX + this.size/2, this.y + this.size/2, this.explosionRadius
-                    );
-                    gradient.addColorStop(0, 'rgba(255, 100, 0, 0.8)');
-                    gradient.addColorStop(0.5, 'rgba(255, 50, 0, 0.5)');
-                    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
-                    ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.arc(screenX + this.size/2, this.y + this.size/2, this.explosionRadius, 0, Math.PI * 2);
-                    ctx.fill();
+                    const g = ctx.createRadialGradient(sx+11, this.y+11, 0, sx+11, this.y+11, this.r);
+                    g.addColorStop(0, 'rgba(255,100,0,0.8)'); g.addColorStop(1, 'rgba(255,0,0,0)');
+                    ctx.fillStyle = g;
+                    ctx.beginPath(); ctx.arc(sx+11, this.y+11, this.r, 0, Math.PI*2); ctx.fill();
                 } else {
-                    // 炸弹本体
                     ctx.save();
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#ff4400';
-                    ctx.fillStyle = '#333';
-                    ctx.fillRect(screenX, this.y, this.size, this.size);
-                    
-                    // 闪烁提示
-                    const flash = Math.sin(this.timer / 200) > 0;
+                    ctx.shadowBlur = 12; ctx.shadowColor = '#ff4400';
+                    ctx.fillStyle = '#333'; ctx.fillRect(sx, this.y, this.size, this.size);
+                    const flash = Math.sin(this.t/150) > 0;
                     ctx.fillStyle = flash ? '#ff0000' : '#ff8800';
-                    ctx.fillRect(screenX + 5, this.y + 5, this.size - 10, this.size - 10);
-                    
-                    // 倒计时数字
-                    const countdown = Math.ceil((3000 - this.timer) / 1000);
-                    if (countdown <= 3 && countdown > 0) {
-                        ctx.fillStyle = '#fff';
-                        ctx.font = 'bold 12px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(countdown, screenX + this.size/2, this.y + this.size/2 + 4);
+                    ctx.fillRect(sx+4, this.y+4, this.size-8, this.size-8);
+                    if (this.t > 2000) {
+                        const cd = Math.ceil((3000-this.t)/1000);
+                        if (cd > 0) { ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center'; ctx.fillText(cd, sx+11, this.y+16); }
                     }
                     ctx.restore();
                 }
             }
-            
-            checkExplosion(px, py, psize) {
-                if (!this.exploding) return { hit: false, damage: 0 };
-                const dx = (px + psize/2) - (this.x + this.size/2);
-                const dy = (py + psize/2) - (this.y + this.size/2);
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < this.explosionRadius) {
-                    return { hit: true, damage: this.damage };
+            trigger(px, py) {
+                const dx = (px+player.size/2)-(this.x+11), dy = (py+player.size/2)-(this.y+11);
+                if (Math.sqrt(dx*dx+dy*dy) < this.maxR && !this.exploding) {
+                    this.exploding = true; return true;
                 }
-                return { hit: false, damage: 0 };
+                return false;
             }
-            
-            checkProximity(px, py, psize) {
-                const dx = (px + psize/2) - (this.x + this.size/2);
-                const dy = (py + psize/2) - (this.y + this.size/2);
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                return dist < this.maxRadius;
+            hit(px, py) {
+                if (!this.exploding) return 0;
+                const dx = (px+player.size/2)-(this.x+11), dy = (py+player.size/2)-(this.y+11);
+                return Math.sqrt(dx*dx+dy*dy) < this.r ? 2 : 0;
             }
         }
         
-        // 金币类
         class Coin {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.size = 15;
-                this.collected = false;
-                this.bobOffset = Math.random() * Math.PI * 2;
-            }
-            
-            draw(ctx, camX = 0, time) {
+            constructor(x, y) { this.x = x; this.y = y; this.s = 14; this.collected = false; this.o = Math.random()*Math.PI*2; }
+            draw(t) {
                 if (this.collected) return;
-                const bob = Math.sin(time / 200 + this.bobOffset) * 3;
-                const screenX = this.x - camX;
-                
-                ctx.save();
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#ffd700';
+                const sx = this.x - camX, bob = Math.sin(t/200+this.o)*3;
+                if (sx + this.s < 0 || sx > W) return;
+                ctx.save(); ctx.shadowBlur = 12; ctx.shadowColor = '#ffd700';
                 ctx.fillStyle = '#ffd700';
-                ctx.beginPath();
-                ctx.arc(screenX + this.size/2, this.y + this.size/2 + bob, this.size/2, 0, Math.PI * 2);
-                ctx.fill();
-                
+                ctx.beginPath(); ctx.arc(sx+7, this.y+7+bob, 7, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = '#ffed4a';
-                ctx.beginPath();
-                ctx.arc(screenX + this.size/2, this.y + this.size/2 + bob, this.size/3, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(sx+7, this.y+7+bob, 4, 0, Math.PI*2); ctx.fill();
                 ctx.restore();
             }
-            
-            checkCollection(px, py, psize) {
+            collect(px, py) {
                 if (this.collected) return false;
-                const dx = (px + psize/2) - (this.x + this.size/2);
-                const dy = (py + psize/2) - (this.y + this.size/2);
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < (psize + this.size) / 2) {
-                    this.collected = true;
-                    return true;
-                }
+                const dx = (px+9)-(this.x+7), dy = (py+9)-(this.y+7);
+                if (Math.sqrt(dx*dx+dy*dy) < 15) { this.collected = true; return true; }
                 return false;
             }
         }
         
-        // 激光类
-        class Laser {
-            constructor(x, y, width, height, type, baseInterval, laserTypeIndex, offset = 0) {
-                this.x = x;
-                this.y = y;
-                this.width = width;
-                this.height = height;
-                this.type = type;
-                this.active = false;
-                this.timer = offset;
-                this.baseInterval = baseInterval;
-                this.currentInterval = baseInterval;
-                this.laserType = LASER_TYPES[laserTypeIndex] || LASER_TYPES[0];
-            }
-            
-            update(deltaTime, levelNum) {
-                const speedMultiplier = 1 + (levelNum - 1) * 0.08;
-                this.currentInterval = this.baseInterval / speedMultiplier;
-                
-                this.timer += deltaTime;
-                if (this.timer >= this.currentInterval) {
-                    this.active = !this.active;
-                    this.timer = 0;
-                }
-            }
-            
-            draw(ctx, camX = 0) {
-                const screenX = this.x - camX;
-                if (screenX + this.width < 0 || screenX > canvas.width) return;
-                
-                ctx.save();
-                if (this.active) {
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = this.laserType.color;
-                    ctx.fillStyle = this.laserType.color;
-                    ctx.fillRect(screenX, this.y, this.width, this.height);
-                    
-                    ctx.shadowBlur = 40;
-                    ctx.fillStyle = this.laserType.color + '80';
-                    if (this.type === 'horizontal') {
-                        ctx.fillRect(screenX, this.y - 2, this.width, this.height + 4);
-                    } else {
-                        ctx.fillRect(screenX - 2, this.y, this.width + 4, this.height);
-                    }
-                } else {
-                    const rgb = hexToRgb(this.laserType.color);
-                    ctx.fillStyle = `rgba(${rgb.r * 0.3}, ${rgb.g * 0.3}, ${rgb.b * 0.3}, 0.3)`;
-                    ctx.fillRect(screenX, this.y, this.width, this.height);
-                    ctx.strokeStyle = this.laserType.color + '60';
-                    ctx.setLineDash([5, 5]);
-                    ctx.strokeRect(screenX, this.y, this.width, this.height);
-                }
-                ctx.restore();
-            }
-            
-            checkCollision(px, py, psize, camX) {
-                if (!this.active) return { hit: false, damage: 0 };
-                const worldPX = px + camX;
-                const hit = worldPX < this.x + this.width &&
-                           worldPX + psize > this.x &&
-                           py < this.y + this.height &&
-                           py + psize > this.y;
-                return { hit: hit, damage: hit ? this.laserType.damage : 0 };
-            }
-        }
+        // ==================== 核心函数 ====================
         
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : { r: 255, g: 0, b: 0 };
-        }
-        
-        // 初始化关卡
-        function initLevel(levelNum) {
-            isScrolling = levelNum >= SCROLL_START_LEVEL;
+        function initLevel(lvl) {
+            level = lvl;
+            isScrolling = lvl >= 20;
+            worldW = isScrolling ? 1600 + (lvl-20)*100 : W;
+            camX = 0;
+            document.getElementById('progressBox').style.display = isScrolling ? 'inline' : 'none';
             
-            // 使用固定画布大小
-            // CANVAS_WIDTH 和 CANVAS_HEIGHT 是常量，不需要重新赋值
+            // 重置生命和时间
+            lives = 5;
+            levelTime = Math.max(30, 60 - Math.floor((lvl-1)/10)*3);
             
-            if (isScrolling) {
-                worldWidth = 2000 + (levelNum - SCROLL_START_LEVEL) * 200;
-                cameraX = 0;
-                document.getElementById('scrollProgress').style.display = 'inline';
-            } else {
-                worldWidth = CANVAS_WIDTH;
-                cameraX = 0;
-                document.getElementById('scrollProgress').style.display = 'none';
-            }
+            // 重置玩家
+            player.x = 50; player.y = 180; player.dizzy = 0;
+            if (items.speed > 0) { player.speed = 6; items.speed--; }
+            else player.speed = 4;
+            if (items.shield > 0) { player.shield = items.shield; items.shield = 0; }
+            else player.shield = 0;
+            if (items.life > 0) { lives = Math.min(5, lives+2); items.life--; }
+            if (items.time > 0) { levelTime += 30; items.time--; }
             
-            // 固定画布大小，使用缩放而不是改变canvas尺寸
-            // canvas.width = CANVAS_WIDTH;  // 移除：会导致画布重置
-            // canvas.height = CANVAS_HEIGHT;
-            
-            // 重置生命和倒计时
-            lives = maxLives;
-            levelMaxTime = Math.max(30, 60 - Math.floor((levelNum - 1) / 10) * 3);
-            levelTime = levelMaxTime;
-            
-            // 重置位置 - 使用固定画布高度
-            startPoint.x = 30;
-            startPoint.y = CANVAS_HEIGHT / 2 - 20;
-            startPoint.width = 40;
-            startPoint.height = 40;
-            
-            endPoint.x = isScrolling ? worldWidth - 70 : CANVAS_WIDTH - 70;
-            endPoint.y = CANVAS_HEIGHT / 2 - 20;
-            endPoint.width = 40;
-            endPoint.height = 40;
-            
-            player.x = startPoint.x + 10;
-            player.y = startPoint.y + 10;
-            player.trail = [];
-            player.dizzy = 0;
-            
-            // 应用道具效果
-            if (player.inventory.speed > 0) {
-                player.speed = player.baseSpeed * 1.5;
-            } else {
-                player.speed = player.baseSpeed;
-            }
+            // 更新终点位置
+            endPt.x = isScrolling ? worldW - 70 : 530;
             
             // 生成激光
-            lasers = [];
-            generateLasers(levelNum);
+            lasers = []; const baseInt = Math.max(500, 2000 - lvl*12);
+            const rows = Math.min(5, 2 + Math.floor(lvl/10));
+            for (let i=0; i<rows; i++) {
+                const y = 50 + (i+1) * ((H-100)/(rows+1));
+                const ti = Math.min(4, Math.floor((lvl-1)/15) + Math.floor(i/2));
+                const off = (i%2) * baseInt/2;
+                if (isScrolling) {
+                    for (let g=0; g<3; g++) {
+                        const gx = 300 + g * (worldW-600)/3;
+                        lasers.push(new Laser(gx-100, y, 200, 5, ti, baseInt, off));
+                    }
+                } else {
+                    lasers.push(new Laser(0, y, W, 5, ti, baseInt, off));
+                }
+            }
+            // 纵向激光
+            const cols = Math.min(4, 1 + Math.floor(lvl/15));
+            for (let i=0; i<cols; i++) {
+                const x = isScrolling ? 200 + i*400 : 120 + i*120;
+                const ti = Math.min(4, Math.floor((lvl-1)/15) + i);
+                lasers.push(new Laser(x, 0, 5, H, ti, baseInt, i*300));
+            }
             
             // 生成炸弹
-            bombs = [];
-            generateBombs(levelNum);
+            bombs = []; const bc = Math.min(5, 1 + Math.floor(lvl/12));
+            for (let i=0; i<bc; i++) {
+                const x = isScrolling ? 200 + Math.random()*(worldW-400) : 100 + Math.random()*(W-200);
+                const y = 60 + Math.random()*(H-120);
+                if (Math.abs(x-50)>60 && Math.abs(x-endPt.x)>60) bombs.push(new Bomb(x, y));
+            }
             
             // 生成金币
-            coins_list = [];
-            generateCoins(levelNum);
+            coinList = []; const cc = 2 + Math.floor((lvl-1)/10)*2;
+            for (let i=0; i<cc; i++) {
+                const x = isScrolling ? 150 + Math.random()*(worldW-300) : 80 + Math.random()*(W-160);
+                const y = 60 + Math.random()*(H-120);
+                if (Math.abs(x-50)>50 && Math.abs(x-endPt.x)>50) coinList.push(new Coin(x, y));
+            }
             
             particles = [];
             updateUI();
         }
         
-        function generateLasers(levelNum) {
-            const baseInterval = Math.max(400, 2000 - levelNum * 15);
-            const laserCount = Math.min(15, 3 + Math.floor(levelNum / 5));
-            
-            if (isScrolling) {
-                // 卷轴关卡：生成多组激光
-                const groups = 3 + Math.floor((levelNum - SCROLL_START_LEVEL) / 5);
-                for (let g = 0; g < groups; g++) {
-                    const groupX = 300 + g * (worldWidth - 600) / groups;
-                    const rows = 2 + Math.floor(levelNum / 20);
-                    
-                    for (let i = 0; i < rows; i++) {
-                        const y = 50 + (i + 1) * ((CANVAS_HEIGHT - 100) / (rows + 1));
-                        const typeIdx = Math.min(Math.floor(levelNum / 15) + Math.floor(i / 2), 4);
-                        const offset = (i % 2) * baseInterval / 2;
-                        lasers.push(new Laser(groupX - 100, y, 200, 6, 'horizontal', baseInterval, typeIdx, offset));
-                    }
-                    
-                    // 纵向激光
-                    for (let i = 0; i < 2; i++) {
-                        const x = groupX + (i - 0.5) * 100;
-                        const typeIdx = Math.min(Math.floor(levelNum / 15) + i, 4);
-                        lasers.push(new Laser(x, 0, 6, CANVAS_HEIGHT, 'vertical', baseInterval, typeIdx, i * 300));
-                    }
-                }
-            } else {
-                // 普通关卡
-                const rows = Math.min(6, 2 + Math.floor(levelNum / 8));
-                const cols = Math.min(6, 2 + Math.floor(levelNum / 8));
-                
-                for (let i = 0; i < rows; i++) {
-                    const y = 40 + (i + 1) * ((CANVAS_HEIGHT - 80) / (rows + 1));
-                    const typeIdx = Math.min(Math.floor((levelNum - 1) / 15) + Math.floor(i / 2), 4);
-                    const offset = (i % 2) * baseInterval / 2;
-                    lasers.push(new Laser(0, y, worldWidth, 6, 'horizontal', baseInterval, typeIdx, offset));
-                }
-                
-                for (let i = 0; i < cols; i++) {
-                    const x = 100 + (i + 0.5) * ((worldWidth - 200) / cols);
-                    const typeIdx = Math.min(Math.floor((levelNum - 1) / 15) + Math.floor(i / 2), 4);
-                    const offset = (i % 3) * baseInterval / 3;
-                    lasers.push(new Laser(x, 0, 6, CANVAS_HEIGHT, 'vertical', baseInterval, typeIdx, offset));
-                }
-            }
+        function updateUI() {
+            document.getElementById('lives').textContent = lives;
+            document.getElementById('timer').textContent = levelTime;
+            document.getElementById('level').textContent = level;
+            document.getElementById('coins').textContent = coins;
         }
         
-        function generateBombs(levelNum) {
-            const bombCount = Math.min(8, 1 + Math.floor(levelNum / 10));
-            for (let i = 0; i < bombCount; i++) {
-                let x, y;
-                let safe = false;
-                let attempts = 0;
-                
-                while (!safe && attempts < 50) {
-                    if (isScrolling) {
-                        x = 200 + Math.random() * (worldWidth - 400);
-                    } else {
-                        x = 100 + Math.random() * (worldWidth - 200);
-                    }
-                    y = 60 + Math.random() * (CANVAS_HEIGHT - 120);
-                    
-                    // 确保不在起点终点附近
-                    safe = (x < startPoint.x - 50 || x > startPoint.x + 90) &&
-                           (x < endPoint.x - 50 || x > endPoint.x + 90);
-                    
-                    attempts++;
-                }
-                
-                if (safe) {
-                    bombs.push(new Bomb(x, y));
-                }
-            }
-        }
-        
-        function generateCoins(levelNum) {
-            // 计算金币数量
-            const coinGroup = Math.floor((levelNum - 1) / 10);
-            const coinCount = 2 + coinGroup * 2;
-            
-            for (let i = 0; i < coinCount; i++) {
-                let x, y;
-                let safe = false;
-                let attempts = 0;
-                
-                while (!safe && attempts < 50) {
-                    if (isScrolling) {
-                        x = 150 + Math.random() * (worldWidth - 300);
-                    } else {
-                        x = 100 + Math.random() * (worldWidth - 200);
-                    }
-                    y = 60 + Math.random() * (CANVAS_HEIGHT - 120);
-                    
-                    safe = (x < startPoint.x - 40 || x > startPoint.x + 80) &&
-                           (x < endPoint.x - 40 || x > endPoint.x + 80);
-                    
-                    attempts++;
-                }
-                
-                if (safe) {
-                    coins_list.push(new Coin(x, y));
-                }
-            }
-        }
-        
-        // 游戏主循环
-        function gameLoop(currentTime) {
+        function update(dt) {
             if (gameState !== 'playing') return;
             
-            const deltaTime = currentTime - lastTime;
-            lastTime = currentTime;
-            gameTime += deltaTime;
+            if (player.dizzy > 0) player.dizzy -= dt;
             
-            update(deltaTime);
-            draw();
-            
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function update(deltaTime) {
-            // 眩晕效果
-            if (player.dizzy > 0) {
-                player.dizzy -= deltaTime;
-            }
-            
-            // 移动玩家
+            // 移动
             let dx = 0, dy = 0;
-            
             if (player.dizzy <= 0) {
-                if (keys['ArrowUp'] || keys['w'] || keys['W']) dy = -player.speed;
-                if (keys['ArrowDown'] || keys['s'] || keys['S']) dy = player.speed;
-                if (keys['ArrowLeft'] || keys['a'] || keys['A']) dx = -player.speed;
-                if (keys['ArrowRight'] || keys['d'] || keys['D']) dx = player.speed;
+                if (keys['ArrowUp'] || keys['w']) dy = -player.speed;
+                if (keys['ArrowDown'] || keys['s']) dy = player.speed;
+                if (keys['ArrowLeft'] || keys['a']) dx = -player.speed;
+                if (keys['ArrowRight'] || keys['d']) dx = player.speed;
             } else {
-                // 眩晕时随机移动
-                dx = (Math.random() - 0.5) * player.speed;
-                dy = (Math.random() - 0.5) * player.speed;
+                dx = (Math.random()-0.5)*player.speed;
+                dy = (Math.random()-0.5)*player.speed;
             }
+            player.x += dx; player.y += dy;
+            player.x = Math.max(0, Math.min(worldW-player.size, player.x));
+            player.y = Math.max(0, Math.min(H-player.size, player.y));
             
-            player.x += dx;
-            player.y += dy;
-            
-            // 边界限制
-            player.x = Math.max(0, Math.min(worldWidth - player.size, player.x));
-            player.y = Math.max(0, Math.min(CANVAS_HEIGHT - player.size, player.y));
-            
-            // 更新相机（卷轴模式）
+            // 相机
             if (isScrolling) {
-                cameraX = Math.max(0, Math.min(worldWidth - CANVAS_WIDTH, player.x - CANVAS_WIDTH / 3));
-                const progress = Math.floor((player.x / worldWidth) * 100);
-                document.getElementById('scrollPercent').textContent = progress;
+                camX = Math.max(0, Math.min(worldW-W, player.x - W/3));
+                document.getElementById('progress').textContent = Math.floor((player.x/worldW)*100);
             }
             
-            // 轨迹
-            if (dx !== 0 || dy !== 0) {
-                player.trail.push({ x: player.x, y: player.y + player.size/2 });
-                if (player.trail.length > 8) player.trail.shift();
-            }
-            
-            // 更新激光
-            lasers.forEach(laser => laser.update(deltaTime, level));
-            
-            // 更新炸弹
-            bombs = bombs.filter(bomb => {
-                const alive = bomb.update(deltaTime);
-                
-                // 检查玩家是否在炸弹附近触发爆炸
-                if (!bomb.exploding && bomb.checkProximity(player.x, player.y, player.size)) {
-                    bomb.exploding = true;
-                    // 创建爆炸粒子
-                    for (let i = 0; i < 10; i++) {
-                        particles.push(new Particle(bomb.x + bomb.size/2, bomb.y + bomb.size/2, '#ff4400'));
-                    }
+            // 更新对象
+            lasers.forEach(l => l.update(dt, level));
+            bombs = bombs.filter(b => {
+                const alive = b.update(dt);
+                if (b.trigger(player.x, player.y)) {
+                    for(let i=0; i<8; i++) particles.push({x:b.x+11, y:b.y+11, vx:(Math.random()-0.5)*8, vy:(Math.random()-0.5)*8, life:25, c:'#ff4400'});
                 }
-                
                 return alive;
             });
+            particles = particles.filter(p => { p.x+=p.vx; p.y+=p.vy; p.life--; return p.life>0; });
             
-            // 更新粒子
-            particles = particles.filter(p => {
-                p.update();
-                return p.life > 0;
-            });
+            // 碰撞检测
+            let dmg = 0;
+            lasers.forEach(l => dmg += l.hit(player.x, player.y));
+            bombs.forEach(b => dmg += b.hit(player.x, player.y));
             
-            // 检测激光碰撞
-            let totalDamage = 0;
-            lasers.forEach(laser => {
-                const collision = laser.checkCollision(player.x, player.y, player.size, cameraX);
-                if (collision.hit) {
-                    totalDamage += collision.damage;
-                }
-            });
-            
-            // 检测炸弹爆炸伤害
-            let bombHit = false;
-            bombs.forEach(bomb => {
-                const explosion = bomb.checkExplosion(player.x, player.y, player.size);
-                if (explosion.hit) {
-                    totalDamage += explosion.damage;
-                    bombHit = true;
-                }
-            });
-            
-            if (totalDamage > 0) {
-                // 防护盾效果
-                if (player.shield > 0) {
-                    player.shield--;
-                    totalDamage = 0;
-                    // 护盾破碎效果
-                    for (let i = 0; i < 8; i++) {
-                        particles.push(new Particle(player.x + player.size/2, player.y + player.size/2, '#00d4ff'));
-                    }
-                } else {
-                    lives -= totalDamage;
-                }
-                
-                if (bombHit) {
-                    player.dizzy = 2000; // 眩晕2秒
-                }
-                
+            if (dmg > 0) {
+                if (player.shield > 0) { player.shield = 0; dmg = 0; }
+                lives -= dmg;
+                if (bombs.some(b => b.hit(player.x, player.y) > 0)) player.dizzy = 1500;
                 updateUI();
-                
-                player.x = startPoint.x + 10;
-                player.y = startPoint.y + 10;
-                player.trail = [];
-                cameraX = 0;
-                
-                player.color = '#ff0000';
-                setTimeout(() => { player.color = '#00d4ff'; }, 300);
-                
-                if (lives <= 0) {
-                    gameOver('生命耗尽！💔');
-                    return;
-                }
+                player.x = 50; player.y = 180; camX = 0;
+                if (lives <= 0) gameOver();
             }
             
             // 收集金币
-            coins_list.forEach(coin => {
-                if (coin.checkCollection(player.x, player.y, player.size)) {
+            coinList.forEach(c => {
+                if (c.collect(player.x, player.y)) {
                     coins++;
+                    for(let i=0; i<5; i++) particles.push({x:c.x+7, y:c.y+7, vx:(Math.random()-0.5)*6, vy:(Math.random()-0.5)*6, life:20, c:'#ffd700'});
                     updateUI();
-                    // 金币收集效果
-                    for (let i = 0; i < 5; i++) {
-                        particles.push(new Particle(coin.x + coin.size/2, coin.y + coin.size/2, '#ffd700'));
-                    }
                 }
             });
             
-            // 检测到达终点
-            const worldEndX = endPoint.x;
-            if (player.x + player.size > worldEndX &&
-                player.x < worldEndX + endPoint.width &&
-                player.y + player.size > endPoint.y &&
-                player.y < endPoint.y + endPoint.height) {
+            // 到达终点
+            const ex = endPt.x;
+            if (player.x+player.size > ex && player.x < ex+endPt.w &&
+                player.y+player.size > endPt.y && player.y < endPt.y+endPt.h) {
                 levelComplete();
             }
         }
         
         function draw() {
-            // 背景
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0, 0, W, H);
             
             // 网格
-            ctx.strokeStyle = 'rgba(0, 212, 255, 0.06)';
-            ctx.lineWidth = 1;
-            const gridSize = 40;
-            const offsetX = -cameraX % gridSize;
-            for (let x = offsetX; x < canvas.width; x += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
+            ctx.strokeStyle = 'rgba(0,212,255,0.05)';
+            for (let x=-camX%40; x<W; x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+            for (let y=0; y<H; y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
             
             // 起点
-            const startScreenX = startPoint.x - cameraX;
-            if (startScreenX > -50 && startScreenX < canvas.width) {
-                ctx.fillStyle = '#00ff88';
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#00ff88';
-                ctx.fillRect(startScreenX, startPoint.y, startPoint.width, startPoint.height);
-                ctx.fillStyle = '#0a0a0a';
-                ctx.font = 'bold 12px Arial';
-                ctx.textAlign = 'center';
-                ctx.shadowBlur = 0;
-                ctx.fillText('起', startScreenX + startPoint.width/2, startPoint.y + startPoint.height/2 + 4);
-            }
+            const ssx = startPt.x - camX;
+            ctx.fillStyle = '#00ff88'; ctx.shadowBlur = 15; ctx.shadowColor = '#00ff88';
+            ctx.fillRect(ssx, startPt.y, startPt.w, startPt.h);
+            ctx.fillStyle = '#000'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center'; ctx.shadowBlur = 0;
+            ctx.fillText('起', ssx+20, startPt.y+25);
             
             // 终点
-            const endScreenX = endPoint.x - cameraX;
-            if (endScreenX > -50 && endScreenX < canvas.width) {
-                ctx.fillStyle = '#ff0066';
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#ff0066';
-                ctx.fillRect(endScreenX, endPoint.y, endPoint.width, endPoint.height);
-                ctx.fillStyle = '#fff';
-                ctx.fillText('终', endScreenX + endPoint.width/2, endPoint.y + endPoint.height/2 + 4);
-                ctx.shadowBlur = 0;
+            const esx = endPt.x - camX;
+            if (esx > -50 && esx < W) {
+                ctx.fillStyle = '#ff0066'; ctx.shadowBlur = 15; ctx.shadowColor = '#ff0066';
+                ctx.fillRect(esx, endPt.y, endPt.w, endPt.h);
+                ctx.fillStyle = '#fff'; ctx.fillText('终', esx+20, endPt.y+25); ctx.shadowBlur = 0;
             }
             
-            // 激光
-            lasers.forEach(laser => laser.draw(ctx, cameraX));
-            
-            // 炸弹
-            bombs.forEach(bomb => bomb.draw(ctx, cameraX));
-            
-            // 金币
-            coins_list.forEach(coin => coin.draw(ctx, cameraX, performance.now()));
-            
-            // 粒子
-            particles.forEach(p => p.draw(ctx, cameraX));
-            
-            // 玩家轨迹
-            if (player.trail.length > 1) {
-                ctx.strokeStyle = 'rgba(0, 212, 255, 0.4)';
-                ctx.lineWidth = 3;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                player.trail.forEach((point, i) => {
-                    const screenX = point.x - cameraX;
-                    if (i === 0) ctx.moveTo(screenX, point.y);
-                    else ctx.lineTo(screenX, point.y);
-                });
-                ctx.stroke();
-            }
+            // 游戏对象
+            lasers.forEach(l => l.draw());
+            bombs.forEach(b => b.draw());
+            coinList.forEach(c => c.draw(performance.now()));
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life/25; ctx.fillStyle = p.c;
+                ctx.fillRect(p.x-camX, p.y, 4, 4); ctx.globalAlpha = 1;
+            });
             
             // 玩家
-            ctx.save();
-            ctx.shadowBlur = 12;
-            ctx.shadowColor = player.color;
+            ctx.save(); ctx.shadowBlur = 12; ctx.shadowColor = player.color;
             ctx.fillStyle = player.color;
-            const playerScreenX = player.x - cameraX;
-            ctx.fillRect(playerScreenX, player.y, player.size, player.size);
-            
-            // 护盾效果
+            ctx.fillRect(player.x-camX, player.y, player.size, player.size);
             if (player.shield > 0) {
-                ctx.strokeStyle = '#00d4ff';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(playerScreenX + player.size/2, player.y + player.size/2, player.size, 0, Math.PI * 2);
-                ctx.stroke();
+                ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(player.x-camX+9, player.y+9, 16, 0, Math.PI*2); ctx.stroke();
             }
-            
-            // 眩晕效果
-            if (player.dizzy > 0) {
-                ctx.fillStyle = '#ffff00';
-                ctx.font = '16px Arial';
-                ctx.fillText('💫', playerScreenX + player.size/2, player.y - 10);
-            }
-            
+            if (player.dizzy > 0) { ctx.font = '14px Arial'; ctx.fillText('💫', player.x-camX+9, player.y-5); }
             ctx.restore();
         }
         
-        // 游戏控制函数
+        function gameLoop(ts) {
+            if (gameState !== 'playing') return;
+            const dt = ts - lastTime; lastTime = ts;
+            update(dt); draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // ==================== 游戏控制 ====================
+        
         function startGame() {
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameOverScreen').style.display = 'none';
-            document.getElementById('shopBtn').style.display = 'inline-block';
             document.getElementById('actionBtn').textContent = '重新开始';
-            
             gameState = 'playing';
-            level = 1;
-            lives = 5;
-            coins = 0;
-            totalTime = 0;
-            player.inventory = { speed: 0, shield: 0, life: 0, time: 0 };
-            player.shield = 0;
-            updateInventoryUI();
-            
+            level = 1; lives = 5; coins = 0; totalTime = 0;
+            Object.keys(items).forEach(k => items[k] = 0);
             initLevel(1);
             lastTime = performance.now();
             requestAnimationFrame(gameLoop);
-            startTimer();
-        }
-        
-        function restartGame() {
-            startGame();
-        }
-        
-        let timerInterval;
-        function startTimer() {
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if (gameState === 'playing') {
-                    levelTime--;
-                    totalTime++;
+                    levelTime--; totalTime++;
+                    if (levelTime <= 0) gameOver();
                     updateUI();
-                    
-                    if (levelTime <= 0) {
-                        gameOver('时间到！⏰');
-                    }
                 }
             }, 1000);
         }
         
         function levelComplete() {
             clearInterval(timerInterval);
-            
-            // 检查是否进入商店关
-            if (SHOP_LEVELS.includes(level)) {
-                showShop();
-                return;
-            }
-            
-            if (level >= TOTAL_LEVELS) {
-                victory();
-                return;
-            }
-            
+            if (level % 10 === 0) { showShop(); return; }
+            if (level >= 100) { victory(); return; }
             level++;
-            
-            // 显示过渡
-            const msgDiv = document.createElement('div');
-            msgDiv.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(0,0,0,0.95);
-                color: #00ff88;
-                padding: 20px 40px;
-                border-radius: 15px;
-                border: 2px solid #00ff88;
-                font-size: 18px;
-                z-index: 200;
-                text-align: center;
-            `;
-            
-            let levelType = '';
-            if (level === SCROLL_START_LEVEL) levelType = '<br>📜 开始卷轴关卡！';
-            else if (SHOP_LEVELS.includes(level - 1)) levelType = '';
-            
-            msgDiv.innerHTML = `
-                <div style="font-size:26px;font-weight:bold;margin-bottom:10px;">第 ${level} 关</div>
-                <div style="font-size:13px;color:#ffd700;">🪙 金币: ${coins}</div>
-                <div style="font-size:12px;color:#aaa;margin-top:5px;">❤️ 生命已重置为 5</div>
-                ${levelType}
-            `;
-            document.body.appendChild(msgDiv);
-            
-            setTimeout(() => {
-                msgDiv.remove();
-                initLevel(level);
-                lastTime = performance.now();
-                requestAnimationFrame(gameLoop);
-                startTimer();
-            }, 1500);
+            initLevel(level);
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+            timerInterval = setInterval(() => {
+                if (gameState === 'playing') {
+                    levelTime--; totalTime++;
+                    if (levelTime <= 0) gameOver();
+                    updateUI();
+                }
+            }, 1000);
         }
         
-        function gameOver(reason) {
-            gameState = 'gameover';
-            clearInterval(timerInterval);
-            document.getElementById('gameOverTitle').textContent = '游戏结束';
-            document.getElementById('gameOverTitle').style.color = '#ff6b6b';
-            document.getElementById('gameOverMessage').innerHTML = reason;
-            document.getElementById('finalStats').innerHTML = `
-                到达关卡: ${level}/100<br>
-                总用时: ${formatTime(totalTime)}<br>
-                收集金币: ${coins} 🪙
-            `;
-            document.getElementById('playerName').value = '';
+        function gameOver() {
+            gameState = 'over'; clearInterval(timerInterval);
+            document.getElementById('goTitle').textContent = '游戏结束';
+            document.getElementById('goTitle').style.color = '#ff6b6b';
+            document.getElementById('goStats').innerHTML = `关卡: ${level}/100<br>用时: ${Math.floor(totalTime/60)}分${totalTime%60}秒<br>金币: ${coins}`;
             document.getElementById('gameOverScreen').style.display = 'block';
         }
         
         function victory() {
-            gameState = 'victory';
-            clearInterval(timerInterval);
-            document.getElementById('gameOverTitle').textContent = '🎉 恭喜通关！';
-            document.getElementById('gameOverTitle').style.color = '#00ff88';
-            document.getElementById('gameOverMessage').innerHTML = '你成功通过了所有100个关卡！';
-            document.getElementById('finalStats').innerHTML = `
-                总用时: ${formatTime(totalTime)}<br>
-                剩余金币: ${coins} 🪙
-            `;
-            document.getElementById('playerName').value = '';
+            gameState = 'victory'; clearInterval(timerInterval);
+            document.getElementById('goTitle').textContent = '🎉 通关！';
+            document.getElementById('goTitle').style.color = '#00ff88';
+            document.getElementById('goStats').innerHTML = `恭喜通过100关！<br>总用时: ${Math.floor(totalTime/60)}分${totalTime%60}秒`;
             document.getElementById('gameOverScreen').style.display = 'block';
         }
         
-        function formatTime(seconds) {
-            const m = Math.floor(seconds / 60);
-            const s = seconds % 60;
-            return `${m}分${s.toString().padStart(2, '0')}秒`;
-        }
+        // ==================== 商店 ====================
         
-        // 商店功能
         function showShop() {
             gameState = 'shop';
-            clearInterval(timerInterval);
             document.getElementById('shopCoins').textContent = coins;
+            const container = document.getElementById('shopItems');
+            container.innerHTML = `
+                <div class="shop-item" onclick="buy('speed',10)">⚡ 加速靴<br><small>10🪙 速度+50%</small></div>
+                <div class="shop-item" onclick="buy('shield',15)">🛡️ 防护盾<br><small>15🪙 抵挡伤害</small></div>
+                <div class="shop-item" onclick="buy('life',8)">❤️ 生命药水<br><small>8🪙 +2生命</small></div>
+                <div class="shop-item" onclick="buy('time',12)">⏱️ 时间沙漏<br><small>12🪙 +30秒</small></div>
+            `;
             document.getElementById('shopScreen').style.display = 'block';
-            updateShopItems();
+        }
+        
+        function buy(type, price) {
+            if (coins >= price) {
+                coins -= price; items[type]++;
+                document.getElementById('shopCoins').textContent = coins;
+                updateUI();
+            }
         }
         
         function closeShop() {
             document.getElementById('shopScreen').style.display = 'none';
-            gameState = 'playing';
-            
-            // 使用道具
-            if (player.inventory.life > 0) {
-                lives = Math.min(maxLives, lives + 2);
-                player.inventory.life--;
-            }
-            if (player.inventory.time > 0) {
-                levelTime += 30;
-                player.inventory.time--;
-            }
-            if (player.inventory.speed > 0) {
-                player.speed = player.baseSpeed * 1.5;
-            } else {
-                player.speed = player.baseSpeed;
-            }
-            if (player.inventory.shield > 0) {
-                player.shield = player.inventory.shield;
-            }
-            
-            updateInventoryUI();
-            updateUI();
-            
-            if (level >= TOTAL_LEVELS) {
-                victory();
-            } else {
-                level++;
-                initLevel(level);
-                lastTime = performance.now();
-                requestAnimationFrame(gameLoop);
-                startTimer();
-            }
+            levelComplete();
         }
         
-        function buyItem(itemType) {
-            const item = SHOP_ITEMS[itemType];
-            if (coins >= item.price) {
-                coins -= item.price;
-                player.inventory[itemType]++;
-                document.getElementById('shopCoins').textContent = coins;
-                updateShopItems();
-                updateInventoryUI();
-                
-                // 购买成功效果
-                const btn = event.currentTarget;
-                btn.style.background = 'rgba(0, 255, 0, 0.3)';
-                setTimeout(() => {
-                    btn.style.background = '';
-                }, 300);
-            }
-        }
+        // ==================== 排行榜 ====================
         
-        function updateShopItems() {
-            document.querySelectorAll('.shop-item').forEach(item => {
-                const price = parseInt(item.querySelector('.price').textContent.match(/\d+/)[0]);
-                if (coins < price) {
-                    item.style.opacity = '0.5';
-                } else {
-                    item.style.opacity = '1';
-                }
-            });
-        }
-        
-        function updateInventoryUI() {
-            const container = document.getElementById('inventory');
-            container.innerHTML = '';
-            
-            Object.entries(player.inventory).forEach(([type, count]) => {
-                if (count > 0) {
-                    const slot = document.createElement('div');
-                    slot.className = 'item-slot';
-                    slot.innerHTML = `
-                        ${SHOP_ITEMS[type].icon}
-                        <span class="count">${count}</span>
-                    `;
-                    container.appendChild(slot);
-                }
-            });
-        }
-        
-        // 排行榜功能
         function submitScore() {
-            const name = document.getElementById('playerName').value.trim() || '匿名玩家';
-            
-            leaderboard.push({
-                name: name,
-                level: level,
-                time: totalTime,
-                coins: coins,
-                date: new Date().toLocaleDateString()
-            });
-            
-            // 排序：关卡高优先，相同则时间短优先
-            leaderboard.sort((a, b) => {
-                if (b.level !== a.level) return b.level - a.level;
-                return a.time - b.time;
-            });
-            
-            // 只保留前20名
-            leaderboard = leaderboard.slice(0, 20);
-            
-            // 保存到本地存储
-            localStorage.setItem('laserEscape100_leaderboard', JSON.stringify(leaderboard));
-            
+            const name = document.getElementById('playerName').value.trim() || '匿名';
+            lb.push({name, level, time: totalTime, coins, date: new Date().toLocaleDateString()});
+            lb.sort((a,b) => b.level !== a.level ? b.level - a.level : a.time - b.time);
+            lb = lb.slice(0, 20);
+            localStorage.setItem('lb100', JSON.stringify(lb));
             document.getElementById('gameOverScreen').style.display = 'none';
             showLeaderboard();
         }
@@ -1456,82 +568,44 @@
         }
         
         function showLeaderboard() {
-            const content = document.getElementById('leaderboardContent');
-            
-            if (leaderboard.length === 0) {
-                content.innerHTML = '<p style="color:#888;padding:20px;">暂无记录，快来挑战吧！</p>';
+            const c = document.getElementById('lbContent');
+            if (lb.length === 0) {
+                c.innerHTML = '<p style="color:#888">暂无记录</p>';
             } else {
-                let html = '<table class="leaderboard-table">';
-                html += '<tr><th>排名</th><th>玩家</th><th>关卡</th><th>用时</th></tr>';
-                
-                leaderboard.forEach((entry, index) => {
-                    const rankClass = index < 3 ? `rank-${index + 1}` : '';
-                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`;
-                    html += `
-                        <tr>
-                            <td class="${rankClass}">${medal}</td>
-                            <td>${entry.name}</td>
-                            <td>${entry.level}</td>
-                            <td>${formatTime(entry.time)}</td>
-                        </tr>
-                    `;
+                let html = '<table><tr><th>排名</th><th>玩家</th><th>关卡</th><th>用时</th></tr>';
+                lb.forEach((e,i) => {
+                    const m = Math.floor(e.time/60), s = e.time%60;
+                    html += `<tr><td>${i<3?['🥇','🥈','🥉'][i]:i+1}</td><td>${e.name}</td><td>${e.level}</td><td>${m}分${s}秒</td></tr>`;
                 });
-                
-                html += '</table>';
-                content.innerHTML = html;
+                c.innerHTML = html + '</table>';
             }
-            
-            document.getElementById('leaderboardScreen').style.display = 'block';
+            document.getElementById('lbScreen').style.display = 'block';
         }
         
         function hideLeaderboard() {
-            document.getElementById('leaderboardScreen').style.display = 'none';
+            document.getElementById('lbScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'block';
         }
         
-        // UI更新
-        function updateUI() {
-            document.getElementById('lives').textContent = lives;
-            document.getElementById('level').textContent = level;
-            document.getElementById('coins').textContent = coins;
-            document.getElementById('timer').textContent = levelTime;
-        }
+        // ==================== 输入 ====================
         
-        // 控制
-        document.addEventListener('keydown', (e) => { keys[e.key] = true; });
-        document.addEventListener('keyup', (e) => { keys[e.key] = false; });
+        document.addEventListener('keydown', e => keys[e.key] = true);
+        document.addEventListener('keyup', e => keys[e.key] = false);
         
-        const dPadButtons = {
-            'btnUp': 'ArrowUp', 'btnDown': 'ArrowDown',
-            'btnLeft': 'ArrowLeft', 'btnRight': 'ArrowRight'
-        };
-        
-        Object.keys(dPadButtons).forEach(btnId => {
-            const btn = document.getElementById(btnId);
-            const key = dPadButtons[btnId];
-            
-            const start = (e) => { e.preventDefault(); keys[key] = true; btn.classList.add('pressed'); };
-            const end = (e) => { e.preventDefault(); keys[key] = false; btn.classList.remove('pressed'); };
-            
-            btn.addEventListener('touchstart', start);
-            btn.addEventListener('touchend', end);
-            btn.addEventListener('mousedown', start);
-            btn.addEventListener('mouseup', end);
-            btn.addEventListener('mouseleave', end);
+        ['btnUp:ArrowUp', 'btnDown:ArrowDown', 'btnLeft:ArrowLeft', 'btnRight:ArrowRight'].forEach(s => {
+            const [id, key] = s.split(':');
+            const btn = document.getElementById(id);
+            const start = e => { e.preventDefault(); keys[key] = true; };
+            const end = e => { e.preventDefault(); keys[key] = false; };
+            btn.addEventListener('touchstart', start); btn.addEventListener('touchend', end);
+            btn.addEventListener('mousedown', start); btn.addEventListener('mouseup', end);
         });
         
-        document.getElementById('actionBtn').addEventListener('click', () => {
-            if (gameState === 'start') startGame();
-            else restartGame();
-        });
+        document.getElementById('actionBtn').addEventListener('click', startGame);
+        document.addEventListener('touchmove', e => { if (e.target.closest('#dPad')) e.preventDefault(); }, {passive:false});
         
-        document.addEventListener('touchmove', (e) => {
-            if (e.target.closest('#dPad')) e.preventDefault();
-        }, { passive: false });
-        
-        // 初始化
-        initLevel(1);
-        draw();
+        // 初始绘制
+        initLevel(1); draw();
     </script>
 </body>
 </html>
