@@ -103,10 +103,18 @@
     <!-- 开始界面 -->
     <div id="startScreen" class="screen">
         <h2>⚡ 激光大冒险100</h2>
-        <p>🎮 100关挑战 | 💣 躲避炸弹</p>
+        <p>🎮 100关挑战 | 💣 5关后有炸弹</p>
         <p>🛒 每10关商店 | 📜 20关后卷轴</p>
         <p style="color:#ff6b6b">🔴-1 🟠-2 🟡-3 🟢-4 🔵-5</p>
+        
+        <div id="startLevelSelect" style="margin:15px 0; display:none;">
+            <p style="color:#ffd700">选择起始关卡 (1-<span id="startMaxLevel">1</span>):</p>
+            <input type="range" id="mainStartLevel" min="1" max="1" value="1" style="width:200px;" oninput="document.getElementById('mainLevelNum').textContent=this.value">
+            <p style="font-size:20px;color:#00d4ff;margin-top:5px;">第 <span id="mainLevelNum">1</span> 关</p>
+        </div>
+        
         <button onclick="startGame()">开始挑战</button>
+        <button onclick="startFromSelectedLevel()" id="continueBtn" style="background:linear-gradient(145deg,#00d4ff,#0099cc); display:none;">继续进度</button>
         <button onclick="showLeaderboard()" style="background:linear-gradient(145deg,#ff6b9d,#ff4081)">🏆 排行</button>
     </div>
     
@@ -350,12 +358,15 @@
                 lasers.push(new Laser(x, 0, 5, H, ti, baseInt, i*300));
             }
             
-            // 生成炸弹
-            bombs = []; const bc = Math.min(5, 1 + Math.floor(lvl/12));
-            for (let i=0; i<bc; i++) {
-                const x = isScrolling ? 200 + Math.random()*(worldW-400) : 100 + Math.random()*(W-200);
-                const y = 60 + Math.random()*(H-120);
-                if (Math.abs(x-50)>60 && Math.abs(x-endPt.x)>60) bombs.push(new Bomb(x, y));
+            // 生成炸弹 - 5关后才有
+            bombs = []; 
+            if (lvl >= 5) {
+                const bc = Math.min(5, 1 + Math.floor(lvl/12));
+                for (let i=0; i<bc; i++) {
+                    const x = isScrolling ? 200 + Math.random()*(worldW-400) : 100 + Math.random()*(W-200);
+                    const y = 60 + Math.random()*(H-120);
+                    if (Math.abs(x-50)>60 && Math.abs(x-endPt.x)>60) bombs.push(new Bomb(x, y));
+                }
             }
             
             // 生成金币
@@ -489,26 +500,35 @@
             ctx.restore();
         }
         
+        // 游戏循环控制
+        let gameLoopId = null;
+        
         function gameLoop(ts) {
-            if (gameState !== 'playing') return;
+            if (gameState !== 'playing') { gameLoopId = null; return; }
             const dt = ts - lastTime; lastTime = ts;
             update(dt); draw();
-            requestAnimationFrame(gameLoop);
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+        
+        function startGameLoop() {
+            if (gameLoopId) cancelAnimationFrame(gameLoopId);
+            lastTime = performance.now();
+            gameLoopId = requestAnimationFrame(gameLoop);
         }
         
         // ==================== 游戏控制 ====================
         
         function startGame() {
+            const startLvl = parseInt(document.getElementById('mainStartLevel')?.value || '1');
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameOverScreen').style.display = 'none';
             document.getElementById('actionBtn').textContent = '重新开始';
             gameState = 'playing';
-            level = 1; lives = 5; coins = 0; totalTime = 0;
+            level = startLvl; lives = 5; coins = 0; totalTime = 0;
             Object.keys(items).forEach(k => items[k] = 0);
-            Object.keys(keys).forEach(k => keys[k] = false); // 重置按键
-            initLevel(1);
-            lastTime = performance.now();
-            requestAnimationFrame(gameLoop);
+            Object.keys(keys).forEach(k => keys[k] = false);
+            initLevel(startLvl);
+            startGameLoop();
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if (gameState === 'playing') {
@@ -519,6 +539,10 @@
             }, 1000);
         }
         
+        function startFromSelectedLevel() {
+            startGame();
+        }
+        
         function levelComplete() {
             clearInterval(timerInterval);
             saveMaxLevel(level);
@@ -526,8 +550,7 @@
             if (level >= 100) { victory(); return; }
             level++;
             initLevel(level);
-            lastTime = performance.now();
-            requestAnimationFrame(gameLoop);
+            startGameLoop();
             timerInterval = setInterval(() => {
                 if (gameState === 'playing') {
                     levelTime--; totalTime++;
@@ -618,8 +641,7 @@
             Object.keys(items).forEach(k => items[k] = 0);
             Object.keys(keys).forEach(k => keys[k] = false); // 重置按键
             initLevel(startLvl);
-            lastTime = performance.now();
-            requestAnimationFrame(gameLoop);
+            startGameLoop();
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if (gameState === 'playing') {
@@ -667,7 +689,20 @@
         document.getElementById('actionBtn').addEventListener('click', startGame);
         document.addEventListener('touchmove', e => { if (e.target.closest('#dPad')) e.preventDefault(); }, {passive:false});
         
-        // 初始绘制
+        // 更新开始界面的关卡选择
+        function updateStartScreen() {
+            const maxLvl = Math.max(1, maxLevelReached);
+            document.getElementById('startMaxLevel').textContent = maxLvl;
+            document.getElementById('mainStartLevel').max = maxLvl;
+            
+            if (maxLvl > 1) {
+                document.getElementById('startLevelSelect').style.display = 'block';
+                document.getElementById('continueBtn').style.display = 'inline-block';
+            }
+        }
+        
+        // 初始绘制和更新开始界面
+        updateStartScreen();
         initLevel(1); draw();
     </script>
 </body>
