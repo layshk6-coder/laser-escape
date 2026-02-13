@@ -65,6 +65,14 @@
             padding: 10px 15px; font-size: 14px; border: 2px solid #00d4ff; border-radius: 20px;
             background: rgba(0, 212, 255, 0.1); color: white; text-align: center; margin: 10px 0;
         }
+        input[type="range"] {
+            -webkit-appearance: none; width: 200px; height: 8px; border-radius: 4px;
+            background: rgba(0, 212, 255, 0.3); outline: none; margin: 10px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+            background: #00d4ff; cursor: pointer; box-shadow: 0 0 10px #00d4ff;
+        }
         table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
         th { background: rgba(255, 107, 157, 0.2); padding: 8px; color: #ff6b9d; }
         td { padding: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
@@ -114,9 +122,15 @@
     <div id="gameOverScreen" class="screen">
         <h2 id="goTitle">游戏结束</h2>
         <p id="goStats"></p>
+        <div id="levelSelect" style="margin:15px 0;">
+            <p style="color:#ffd700">选择起始关卡 (1-<span id="maxLevel">1</span>):</p>
+            <input type="range" id="startLevel" min="1" max="1" value="1" style="width:200px;" oninput="document.getElementById('levelNum').textContent=this.value">
+            <p style="font-size:20px;color:#00d4ff;margin-top:5px;">第 <span id="levelNum">1</span> 关</p>
+        </div>
         <input type="text" id="playerName" class="name-input" placeholder="输入名字" maxlength="8"><br>
-        <button onclick="submitScore()">提交</button>
-        <button onclick="skipSubmit()" style="background:#666">跳过</button>
+        <button onclick="submitScore()">提交分数</button>
+        <button onclick="restartFromLevel()" style="background:linear-gradient(145deg,#00d4ff,#0099cc)">从选择关卡开始</button>
+        <button onclick="skipSubmit()" style="background:#666">返回主菜单</button>
     </div>
     
     <!-- 排行榜 -->
@@ -140,7 +154,7 @@
         let isScrolling = false, worldW = W, camX = 0;
         
         // 玩家
-        const player = { x: 50, y: 180, size: 18, speed: 4, dizzy: 0, shield: 0 };
+        const player = { x: 50, y: 180, size: 18, speed: 3, dizzy: 0, shield: 0 };
         
         // 起点终点
         const startPt = { x: 30, y: 180, w: 40, h: 40 };
@@ -161,6 +175,17 @@
         
         // 排行榜
         let lb = JSON.parse(localStorage.getItem('lb100') || '[]');
+        
+        // 最高关卡记录
+        let maxLevelReached = parseInt(localStorage.getItem('maxLevel100') || '1');
+        
+        // 保存最高关卡
+        function saveMaxLevel(lvl) {
+            if (lvl > maxLevelReached) {
+                maxLevelReached = lvl;
+                localStorage.setItem('maxLevel100', maxLevelReached);
+            }
+        }
         
         // ==================== 类定义 ====================
         
@@ -287,8 +312,8 @@
             
             // 重置玩家
             player.x = 50; player.y = 180; player.dizzy = 0;
-            if (items.speed > 0) { player.speed = 6; items.speed--; }
-            else player.speed = 4;
+            if (items.speed > 0) { player.speed = 4.5; items.speed--; }
+            else player.speed = 3;
             if (items.shield > 0) { player.shield = items.shield; items.shield = 0; }
             else player.shield = 0;
             if (items.life > 0) { lives = Math.min(5, lives+2); items.life--; }
@@ -491,6 +516,7 @@
         
         function levelComplete() {
             clearInterval(timerInterval);
+            saveMaxLevel(level);
             if (level % 10 === 0) { showShop(); return; }
             if (level >= 100) { victory(); return; }
             level++;
@@ -508,9 +534,18 @@
         
         function gameOver() {
             gameState = 'over'; clearInterval(timerInterval);
+            saveMaxLevel(level);
             document.getElementById('goTitle').textContent = '游戏结束';
             document.getElementById('goTitle').style.color = '#ff6b6b';
             document.getElementById('goStats').innerHTML = `关卡: ${level}/100<br>用时: ${Math.floor(totalTime/60)}分${totalTime%60}秒<br>金币: ${coins}`;
+            
+            // 更新关卡选择器
+            const maxLvl = Math.max(1, maxLevelReached);
+            document.getElementById('maxLevel').textContent = maxLvl;
+            document.getElementById('startLevel').max = maxLvl;
+            document.getElementById('startLevel').value = 1;
+            document.getElementById('levelNum').textContent = '1';
+            
             document.getElementById('gameOverScreen').style.display = 'block';
         }
         
@@ -565,6 +600,28 @@
         function skipSubmit() {
             document.getElementById('gameOverScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'block';
+        }
+        
+        function restartFromLevel() {
+            const startLvl = parseInt(document.getElementById('startLevel').value);
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('actionBtn').textContent = '重新开始';
+            gameState = 'playing';
+            level = startLvl;
+            lives = 5;
+            totalTime = 0;
+            Object.keys(items).forEach(k => items[k] = 0);
+            initLevel(startLvl);
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (gameState === 'playing') {
+                    levelTime--; totalTime++;
+                    if (levelTime <= 0) gameOver();
+                    updateUI();
+                }
+            }, 1000);
         }
         
         function showLeaderboard() {
