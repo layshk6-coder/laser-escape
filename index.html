@@ -304,6 +304,10 @@
             isScrolling = lvl >= 20;
             worldW = isScrolling ? 1600 + (lvl-20)*100 : W;
             camX = 0;
+            
+            // 重置所有按键状态 - 防止按键残留
+            Object.keys(keys).forEach(k => keys[k] = false);
+            
             document.getElementById('progressBox').style.display = isScrolling ? 'inline' : 'none';
             
             // 重置生命和时间
@@ -501,6 +505,7 @@
             gameState = 'playing';
             level = 1; lives = 5; coins = 0; totalTime = 0;
             Object.keys(items).forEach(k => items[k] = 0);
+            Object.keys(keys).forEach(k => keys[k] = false); // 重置按键
             initLevel(1);
             lastTime = performance.now();
             requestAnimationFrame(gameLoop);
@@ -611,6 +616,7 @@
             lives = 5;
             totalTime = 0;
             Object.keys(items).forEach(k => items[k] = 0);
+            Object.keys(keys).forEach(k => keys[k] = false); // 重置按键
             initLevel(startLvl);
             lastTime = performance.now();
             requestAnimationFrame(gameLoop);
