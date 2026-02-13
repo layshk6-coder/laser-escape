@@ -38,15 +38,17 @@
         
         #gameInfo {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             color: #fff;
             margin-bottom: 10px;
-            font-size: 16px;
+            font-size: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         
         .info-item {
             background: rgba(0, 212, 255, 0.2);
-            padding: 5px 15px;
+            padding: 5px 12px;
             border-radius: 20px;
             border: 1px solid #00d4ff;
         }
@@ -61,32 +63,32 @@
             box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
             background: #0a0a0a;
             max-width: 100%;
-            max-height: 60vh;
+            max-height: 55vh;
         }
         
         #controls {
-            margin-top: 15px;
+            margin-top: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         #dPad {
             display: grid;
-            grid-template-columns: repeat(3, 60px);
-            grid-template-rows: repeat(3, 60px);
-            gap: 5px;
+            grid-template-columns: repeat(3, 55px);
+            grid-template-rows: repeat(3, 55px);
+            gap: 4px;
         }
         
         .dBtn {
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             border: none;
             border-radius: 10px;
             background: linear-gradient(145deg, #00d4ff, #0099cc);
             color: white;
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
             transition: all 0.1s;
@@ -98,19 +100,14 @@
             box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4);
         }
         
-        .dBtn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-        
         #btnUp { grid-column: 2; grid-row: 1; }
         #btnLeft { grid-column: 1; grid-row: 2; }
         #btnRight { grid-column: 3; grid-row: 2; }
         #btnDown { grid-column: 2; grid-row: 3; }
         
         #actionBtn {
-            padding: 12px 40px;
-            font-size: 18px;
+            padding: 10px 35px;
+            font-size: 16px;
             border: none;
             border-radius: 25px;
             background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
@@ -126,41 +123,65 @@
         
         #instructions {
             color: #888;
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+        
+        .laser-legend {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 5px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #aaa;
+        }
+        
+        .laser-dot {
+            width: 12px;
+            height: 4px;
+            border-radius: 2px;
         }
         
         .screen {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
             color: white;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 30px;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 25px;
             border-radius: 20px;
             border: 2px solid #00d4ff;
             display: none;
             z-index: 100;
+            max-width: 90vw;
         }
         
         .screen h2 {
             color: #00d4ff;
-            margin-bottom: 20px;
-            font-size: 28px;
+            margin-bottom: 15px;
+            font-size: 24px;
         }
         
         .screen p {
-            margin: 10px 0;
-            font-size: 16px;
+            margin: 8px 0;
+            font-size: 14px;
         }
         
         .screen button {
-            margin-top: 20px;
-            padding: 12px 30px;
-            font-size: 18px;
+            margin-top: 15px;
+            padding: 10px 25px;
+            font-size: 16px;
             border: none;
             border-radius: 25px;
             background: linear-gradient(145deg, #00d4ff, #0099cc);
@@ -169,17 +190,6 @@
         }
         
         #startScreen { display: block; }
-        
-        .laser-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-left: 5px;
-        }
-        
-        .laser-on { background: #ff0000; box-shadow: 0 0 10px #ff0000; }
-        .laser-off { background: #333; }
     </style>
 </head>
 <body>
@@ -188,10 +198,10 @@
     <div id="gameInfo">
         <span class="info-item">❤️ 生命: <span id="lives">5</span></span>
         <span class="info-item">⏱️ 时间: <span id="timer">5:00</span></span>
-        <span class="info-item">🎯 关卡: <span id="level">1</span></span>
+        <span class="info-item">🎯 关卡: <span id="level">1</span>/<span id="totalLevels">10</span></span>
     </div>
     
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <canvas id="gameCanvas"></canvas>
     
     <div id="controls">
         <div id="dPad">
@@ -205,14 +215,23 @@
     
     <p id="instructions">💡 电脑：方向键控制 | 手机：点击方向按钮<br>🎯 从绿色起点到达红色终点，躲避激光！</p>
     
+    <div class="laser-legend">
+        <div class="legend-item"><div class="laser-dot" style="background:#ff0000"></div>-1</div>
+        <div class="legend-item"><div class="laser-dot" style="background:#ff8800"></div>-2</div>
+        <div class="legend-item"><div class="laser-dot" style="background:#ffdd00"></div>-3</div>
+        <div class="legend-item"><div class="laser-dot" style="background:#00ff00"></div>-4</div>
+        <div class="legend-item"><div class="laser-dot" style="background:#0088ff"></div>-5</div>
+    </div>
+    
     <!-- 开始界面 -->
     <div id="startScreen" class="screen">
         <h2>⚡ 激光大冒险</h2>
         <p>🎮 控制小人从起点到达终点</p>
-        <p>❤️ 你有5条生命</p>
-        <p>⚡ 躲避定时切换的激光</p>
-        <p>⏱️ 限时5分钟</p>
-        <p>🏃 越往后激光切换越快！</p>
+        <p>❤️ 每关开始都有5条生命</p>
+        <p>⚡ 躲避不同颜色的激光：</p>
+        <p style="font-size:12px;color:#ff6b6b">🔴-1 🟠-2 🟡-3 🟢-4 🔵-5</p>
+        <p>⏱️ 限时5分钟通关所有关卡</p>
+        <p>🏃 越往后关卡越大、激光越快！</p>
         <button onclick="startGame()">开始挑战</button>
     </div>
     
@@ -228,11 +247,28 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
+        // 游戏配置
+        const TOTAL_LEVELS = 10;
+        const BASE_WIDTH = 600;
+        const BASE_HEIGHT = 400;
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 800;
+        
+        // 激光颜色配置
+        const LASER_TYPES = [
+            { color: '#ff0000', damage: 1, name: 'red' },      // 红色 -1
+            { color: '#ff8800', damage: 2, name: 'orange' },   // 橙色 -2
+            { color: '#ffdd00', damage: 3, name: 'yellow' },   // 黄色 -3
+            { color: '#00ff00', damage: 4, name: 'green' },    // 绿色 -4
+            { color: '#0088ff', damage: 5, name: 'blue' }      // 蓝色 -5
+        ];
+        
         // 游戏状态
-        let gameState = 'start'; // start, playing, gameover, victory
+        let gameState = 'start';
         let lives = 5;
+        let maxLives = 5;
         let level = 1;
-        let timeRemaining = 300; // 5分钟 = 300秒
+        let timeRemaining = 300;
         let lastTime = 0;
         let gameTime = 0;
         
@@ -241,14 +277,14 @@
             x: 50,
             y: 200,
             size: 20,
-            speed: 3,
+            speed: 4,
             color: '#00d4ff',
             trail: []
         };
         
         // 起点和终点
-        const startPoint = { x: 30, y: 180, width: 40, height: 40 };
-        const endPoint = { x: 530, y: 180, width: 40, height: 40 };
+        let startPoint = { x: 30, y: 180, width: 40, height: 40 };
+        let endPoint = { x: 530, y: 180, width: 40, height: 40 };
         
         // 激光数组
         let lasers = [];
@@ -258,21 +294,22 @@
         
         // 激光类
         class Laser {
-            constructor(x, y, width, height, type, baseInterval) {
+            constructor(x, y, width, height, type, baseInterval, laserTypeIndex, offset = 0) {
                 this.x = x;
                 this.y = y;
                 this.width = width;
                 this.height = height;
                 this.type = type; // 'horizontal' 或 'vertical'
                 this.active = false;
-                this.timer = 0;
+                this.timer = offset;
                 this.baseInterval = baseInterval;
                 this.currentInterval = baseInterval;
+                this.laserType = LASER_TYPES[laserTypeIndex] || LASER_TYPES[0];
             }
             
             update(deltaTime, level) {
                 // 根据关卡调整切换速度
-                const speedMultiplier = 1 + (level - 1) * 0.15;
+                const speedMultiplier = 1 + (level - 1) * 0.12;
                 this.currentInterval = this.baseInterval / speedMultiplier;
                 
                 this.timer += deltaTime;
@@ -285,87 +322,129 @@
             draw() {
                 ctx.save();
                 if (this.active) {
-                    // 激光开启状态 - 红色发光效果
+                    // 激光开启状态
                     ctx.shadowBlur = 20;
-                    ctx.shadowColor = '#ff0000';
-                    ctx.fillStyle = '#ff0000';
-                    
-                    // 激光核心
+                    ctx.shadowColor = this.laserType.color;
+                    ctx.fillStyle = this.laserType.color;
                     ctx.fillRect(this.x, this.y, this.width, this.height);
                     
                     // 激光光晕
                     ctx.shadowBlur = 40;
-                    ctx.shadowColor = '#ff4444';
-                    ctx.fillStyle = 'rgba(255, 100, 100, 0.5)';
+                    ctx.shadowColor = this.laserType.color;
+                    ctx.fillStyle = this.laserType.color + '80'; // 50%透明度
                     if (this.type === 'horizontal') {
                         ctx.fillRect(this.x, this.y - 2, this.width, this.height + 4);
                     } else {
                         ctx.fillRect(this.x - 2, this.y, this.width + 4, this.height);
                     }
                 } else {
-                    // 激光关闭状态 - 暗红色
-                    ctx.fillStyle = 'rgba(100, 0, 0, 0.3)';
+                    // 激光关闭状态
+                    const rgb = hexToRgb(this.laserType.color);
+                    ctx.fillStyle = `rgba(${rgb.r * 0.3}, ${rgb.g * 0.3}, ${rgb.b * 0.3}, 0.3)`;
                     ctx.fillRect(this.x, this.y, this.width, this.height);
                     
                     // 警示线
-                    ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+                    ctx.strokeStyle = this.laserType.color + '60';
                     ctx.setLineDash([5, 5]);
+                    ctx.lineWidth = 1;
                     ctx.strokeRect(this.x, this.y, this.width, this.height);
                 }
                 ctx.restore();
             }
             
             checkCollision(px, py, psize) {
-                if (!this.active) return false;
-                return px < this.x + this.width &&
-                       px + psize > this.x &&
-                       py < this.y + this.height &&
-                       py + psize > this.y;
+                if (!this.active) return { hit: false, damage: 0 };
+                const hit = px < this.x + this.width &&
+                           px + psize > this.x &&
+                           py < this.y + this.height &&
+                           py + psize > this.y;
+                return { hit: hit, damage: hit ? this.laserType.damage : 0 };
             }
+        }
+        
+        // 辅助函数：hex转rgb
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 255, g: 0, b: 0 };
+        }
+        
+        // 设置画布大小
+        function setCanvasSize(levelNum) {
+            // 关卡越大，画布越大
+            const scale = 1 + (levelNum - 1) * 0.1;
+            const width = Math.min(BASE_WIDTH * scale, MAX_WIDTH);
+            const height = Math.min(BASE_HEIGHT * scale, MAX_HEIGHT);
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // 更新起点终点位置（始终在左右边缘）
+            startPoint = { 
+                x: 20, 
+                y: height / 2 - 20, 
+                width: 40, 
+                height: 40 
+            };
+            endPoint = { 
+                x: width - 60, 
+                y: height / 2 - 20, 
+                width: 40, 
+                height: 40 
+            };
+            
+            return { width, height };
         }
         
         // 初始化关卡
         function initLevel(levelNum) {
+            const { width, height } = setCanvasSize(levelNum);
             lasers = [];
             
-            // 根据关卡生成激光
-            const baseInterval = 2000 - (levelNum - 1) * 200; // 基础间隔随关卡递减
-            const minInterval = 800;
-            const actualInterval = Math.max(minInterval, baseInterval);
+            // 重置生命值为5
+            lives = maxLives;
+            updateUI();
             
-            // 关卡1: 简单布局
-            if (levelNum === 1) {
-                // 横向激光
-                lasers.push(new Laser(100, 100, 400, 4, 'horizontal', actualInterval));
-                lasers.push(new Laser(100, 300, 400, 4, 'horizontal', actualInterval));
-                // 纵向激光
-                lasers.push(new Laser(200, 50, 4, 300, 'vertical', actualInterval + 500));
-                lasers.push(new Laser(400, 50, 4, 300, 'vertical', actualInterval + 500));
+            // 基础间隔随关卡递减
+            const baseInterval = Math.max(600, 2000 - (levelNum - 1) * 150);
+            
+            // 激光数量随关卡增加
+            const rows = 2 + Math.floor(levelNum / 2);
+            const cols = 2 + Math.floor(levelNum / 2);
+            
+            // 计算安全区域（起点和终点周围）
+            const safeZoneLeft = 80;
+            const safeZoneRight = width - 80;
+            const laserAreaWidth = safeZoneRight - safeZoneLeft;
+            const laserAreaHeight = height - 40;
+            
+            // 生成横向激光（贯穿整个宽度）
+            for (let i = 0; i < rows; i++) {
+                const y = 30 + (i + 1) * (laserAreaHeight / (rows + 1));
+                // 激光类型根据关卡难度选择
+                const typeIndex = Math.min(Math.floor((levelNum - 1) / 2) + Math.floor(i / 2), 4);
+                const offset = (i % 2) * (baseInterval / 2);
+                lasers.push(new Laser(0, y, width, 6, 'horizontal', baseInterval, typeIndex, offset));
             }
-            // 关卡2: 更多激光
-            else if (levelNum === 2) {
-                lasers.push(new Laser(80, 80, 440, 4, 'horizontal', actualInterval));
-                lasers.push(new Laser(80, 200, 440, 4, 'horizontal', actualInterval));
-                lasers.push(new Laser(80, 320, 440, 4, 'horizontal', actualInterval));
-                lasers.push(new Laser(150, 50, 4, 300, 'vertical', actualInterval + 300));
-                lasers.push(new Laser(300, 50, 4, 300, 'vertical', actualInterval + 300));
-                lasers.push(new Laser(450, 50, 4, 300, 'vertical', actualInterval + 300));
+            
+            // 生成纵向激光（贯穿整个高度）
+            for (let i = 0; i < cols; i++) {
+                const x = safeZoneLeft + (i + 0.5) * (laserAreaWidth / cols);
+                const typeIndex = Math.min(Math.floor((levelNum - 1) / 2) + Math.floor(i / 2), 4);
+                const offset = (i % 3) * (baseInterval / 3);
+                lasers.push(new Laser(x, 0, 6, height, 'vertical', baseInterval, typeIndex, offset));
             }
-            // 关卡3+: 复杂布局
-            else {
-                const rows = 3 + Math.floor((levelNum - 3) / 2);
-                const cols = 3 + Math.floor((levelNum - 3) / 2);
-                
-                for (let i = 0; i < rows; i++) {
-                    const y = 60 + i * (280 / (rows - 1 || 1));
-                    const offset = i % 2 === 0 ? 0 : actualInterval / 2;
-                    lasers.push(new Laser(80, y, 440, 4, 'horizontal', actualInterval, offset));
-                }
-                
-                for (let i = 0; i < cols; i++) {
-                    const x = 120 + i * (360 / (cols - 1 || 1));
-                    const offset = i % 2 === 0 ? actualInterval / 4 : actualInterval * 3/4;
-                    lasers.push(new Laser(x, 50, 4, 300, 'vertical', actualInterval, offset));
+            
+            // 额外添加一些斜向或特殊激光（高级关卡）
+            if (levelNum >= 5) {
+                const extraLasers = Math.floor((levelNum - 3) / 2);
+                for (let i = 0; i < extraLasers; i++) {
+                    const y = 50 + i * 80;
+                    const typeIndex = Math.min(2 + i, 4);
+                    lasers.push(new Laser(0, y, width, 4, 'horizontal', baseInterval * 0.7, typeIndex, i * 200));
                 }
             }
             
@@ -373,6 +452,9 @@
             player.x = startPoint.x + 10;
             player.y = startPoint.y + 10;
             player.trail = [];
+            
+            // 调整玩家速度（大地图移动更快）
+            player.speed = 4 + (levelNum - 1) * 0.3;
         }
         
         // 开始游戏
@@ -382,7 +464,6 @@
             document.getElementById('actionBtn').textContent = '重新开始';
             
             gameState = 'playing';
-            lives = 5;
             level = 1;
             timeRemaining = 300;
             gameTime = 0;
@@ -391,7 +472,6 @@
             lastTime = performance.now();
             requestAnimationFrame(gameLoop);
             
-            // 启动计时器
             startTimer();
         }
         
@@ -420,6 +500,7 @@
         function updateUI() {
             document.getElementById('lives').textContent = lives;
             document.getElementById('level').textContent = level;
+            document.getElementById('totalLevels').textContent = TOTAL_LEVELS;
             
             const minutes = Math.floor(timeRemaining / 60);
             const seconds = timeRemaining % 60;
@@ -470,15 +551,19 @@
             lasers.forEach(laser => laser.update(deltaTime, level));
             
             // 检测激光碰撞
-            let hit = false;
+            let totalDamage = 0;
+            let wasHit = false;
+            
             lasers.forEach(laser => {
-                if (laser.checkCollision(player.x, player.y, player.size)) {
-                    hit = true;
+                const collision = laser.checkCollision(player.x, player.y, player.size);
+                if (collision.hit) {
+                    wasHit = true;
+                    totalDamage += collision.damage;
                 }
             });
             
-            if (hit) {
-                lives--;
+            if (wasHit) {
+                lives -= totalDamage;
                 updateUI();
                 
                 // 重置位置
@@ -488,7 +573,7 @@
                 
                 // 闪烁效果
                 player.color = '#ff0000';
-                setTimeout(() => { player.color = '#00d4ff'; }, 200);
+                setTimeout(() => { player.color = '#00d4ff'; }, 300);
                 
                 if (lives <= 0) {
                     gameOver('生命耗尽！💔');
@@ -511,15 +596,16 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // 绘制网格背景
-            ctx.strokeStyle = 'rgba(0, 212, 255, 0.1)';
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.08)';
             ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += 40) {
+            const gridSize = 40;
+            for (let x = 0; x < canvas.width; x += gridSize) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, canvas.height);
                 ctx.stroke();
             }
-            for (let y = 0; y < canvas.height; y += 40) {
+            for (let y = 0; y < canvas.height; y += gridSize) {
                 ctx.beginPath();
                 ctx.moveTo(0, y);
                 ctx.lineTo(canvas.width, y);
@@ -531,10 +617,11 @@
             ctx.shadowBlur = 20;
             ctx.shadowColor = '#00ff88';
             ctx.fillRect(startPoint.x, startPoint.y, startPoint.width, startPoint.height);
-            ctx.fillStyle = '#fff';
-            ctx.font = '14px Arial';
+            ctx.fillStyle = '#0a0a0a';
+            ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('起点', startPoint.x + startPoint.width/2, startPoint.y + startPoint.height/2 + 5);
+            ctx.shadowBlur = 0;
+            ctx.fillText('起', startPoint.x + startPoint.width/2, startPoint.y + startPoint.height/2 + 5);
             
             // 绘制终点
             ctx.fillStyle = '#ff0066';
@@ -542,7 +629,7 @@
             ctx.shadowColor = '#ff0066';
             ctx.fillRect(endPoint.x, endPoint.y, endPoint.width, endPoint.height);
             ctx.fillStyle = '#fff';
-            ctx.fillText('终点', endPoint.x + endPoint.width/2, endPoint.y + endPoint.height/2 + 5);
+            ctx.fillText('终', endPoint.x + endPoint.width/2, endPoint.y + endPoint.height/2 + 5);
             
             ctx.shadowBlur = 0;
             
@@ -550,14 +637,17 @@
             lasers.forEach(laser => laser.draw());
             
             // 绘制玩家轨迹
-            ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            player.trail.forEach((point, i) => {
-                if (i === 0) ctx.moveTo(point.x, point.y);
-                else ctx.lineTo(point.x, point.y);
-            });
-            ctx.stroke();
+            if (player.trail.length > 1) {
+                ctx.strokeStyle = 'rgba(0, 212, 255, 0.4)';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                player.trail.forEach((point, i) => {
+                    if (i === 0) ctx.moveTo(point.x, point.y);
+                    else ctx.lineTo(point.x, point.y);
+                });
+                ctx.stroke();
+            }
             
             // 绘制玩家
             ctx.save();
@@ -574,24 +664,46 @@
         
         // 关卡完成
         function levelComplete() {
-            level++;
-            
-            if (level > 5) {
+            if (level >= TOTAL_LEVELS) {
                 victory();
-            } else {
-                initLevel(level);
-                updateUI();
-                
-                // 显示关卡提示
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#00ff88';
-                ctx.font = 'bold 30px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(`第 ${level} 关开始！`, canvas.width/2, canvas.height/2);
-                ctx.font = '16px Arial';
-                ctx.fillText('激光切换速度加快！', canvas.width/2, canvas.height/2 + 40);
+                return;
             }
+            
+            level++;
+            initLevel(level);
+            updateUI();
+            
+            // 显示关卡提示
+            showLevelMessage();
+        }
+        
+        // 显示关卡过渡信息
+        function showLevelMessage() {
+            const msgDiv = document.createElement('div');
+            msgDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.9);
+                color: #00ff88;
+                padding: 20px 40px;
+                border-radius: 15px;
+                border: 2px solid #00ff88;
+                font-size: 20px;
+                z-index: 200;
+                text-align: center;
+            `;
+            msgDiv.innerHTML = `
+                <div style="font-size:28px;font-weight:bold;margin-bottom:10px;">第 ${level} 关</div>
+                <div style="font-size:14px;color:#aaa;">地图变大！激光加快！</div>
+                <div style="font-size:14px;color:#ff6b6b;margin-top:5px;">❤️ 生命已重置为 5</div>
+            `;
+            document.body.appendChild(msgDiv);
+            
+            setTimeout(() => {
+                msgDiv.remove();
+            }, 1500);
         }
         
         // 游戏胜利
@@ -599,8 +711,9 @@
             gameState = 'victory';
             clearInterval(timerInterval);
             document.getElementById('gameOverTitle').textContent = '🎉 恭喜通关！';
-            document.getElementById('gameOverMessage').textContent = '你成功通过了所有关卡！';
-            document.getElementById('finalScore').textContent = `剩余生命: ${lives} | 剩余时间: ${Math.floor(timeRemaining/60)}:${(timeRemaining%60).toString().padStart(2,'0')}`;
+            document.getElementById('gameOverTitle').style.color = '#00ff88';
+            document.getElementById('gameOverMessage').textContent = '你成功通过了所有10个关卡！';
+            document.getElementById('finalScore').textContent = `剩余时间: ${Math.floor(timeRemaining/60)}:${(timeRemaining%60).toString().padStart(2,'0')}`;
             document.getElementById('gameOverScreen').style.display = 'block';
         }
         
@@ -609,8 +722,9 @@
             gameState = 'gameover';
             clearInterval(timerInterval);
             document.getElementById('gameOverTitle').textContent = '游戏结束';
+            document.getElementById('gameOverTitle').style.color = '#ff6b6b';
             document.getElementById('gameOverMessage').textContent = reason;
-            document.getElementById('finalScore').textContent = `到达关卡: ${level}`;
+            document.getElementById('finalScore').textContent = `到达关卡: ${level}/${TOTAL_LEVELS}`;
             document.getElementById('gameOverScreen').style.display = 'block';
         }
         
@@ -625,39 +739,33 @@
         
         // 触摸控制
         const dPadButtons = {
-            'btnUp': { key: 'ArrowUp', dx: 0, dy: -1 },
-            'btnDown': { key: 'ArrowDown', dx: 0, dy: 1 },
-            'btnLeft': { key: 'ArrowLeft', dx: -1, dy: 0 },
-            'btnRight': { key: 'ArrowRight', dx: 1, dy: 0 }
+            'btnUp': { key: 'ArrowUp' },
+            'btnDown': { key: 'ArrowDown' },
+            'btnLeft': { key: 'ArrowLeft' },
+            'btnRight': { key: 'ArrowRight' }
         };
         
         Object.keys(dPadButtons).forEach(btnId => {
             const btn = document.getElementById(btnId);
             const mapping = dPadButtons[btnId];
             
-            btn.addEventListener('touchstart', (e) => {
+            const startHandler = (e) => {
                 e.preventDefault();
                 keys[mapping.key] = true;
                 btn.style.transform = 'scale(0.95)';
-            });
+            };
             
-            btn.addEventListener('touchend', (e) => {
+            const endHandler = (e) => {
                 e.preventDefault();
                 keys[mapping.key] = false;
                 btn.style.transform = 'scale(1)';
-            });
+            };
             
-            btn.addEventListener('mousedown', () => {
-                keys[mapping.key] = true;
-            });
-            
-            btn.addEventListener('mouseup', () => {
-                keys[mapping.key] = false;
-            });
-            
-            btn.addEventListener('mouseleave', () => {
-                keys[mapping.key] = false;
-            });
+            btn.addEventListener('touchstart', startHandler);
+            btn.addEventListener('touchend', endHandler);
+            btn.addEventListener('mousedown', startHandler);
+            btn.addEventListener('mouseup', endHandler);
+            btn.addEventListener('mouseleave', endHandler);
         });
         
         // 开始按钮
@@ -676,8 +784,9 @@
             }
         }, { passive: false });
         
-        // 初始绘制
-        initLevel(1);
+        // 初始设置
+        document.getElementById('totalLevels').textContent = TOTAL_LEVELS;
+        setCanvasSize(1);
         draw();
     </script>
 </body>
