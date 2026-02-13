@@ -153,6 +153,9 @@
         const ctx = canvas.getContext('2d');
         const W = 600, H = 400;
         
+        // 最大生命值
+        let maxLives = 5;
+        
         // 游戏状态
         let gameState = 'start';
         let level = 1, lives = 5, coins = 0;
@@ -318,17 +321,17 @@
             document.getElementById('progressBox').style.display = isScrolling ? 'inline' : 'none';
             
             // 重置生命和时间
-            lives = 5;
+            lives = maxLives;
             levelTime = Math.max(30, 60 - Math.floor((lvl-1)/10)*3);
+            
+            // 应用购买的道具
+            if (items.time > 0) { levelTime += 30; items.time--; }
             
             // 重置玩家
             player.x = 50; player.y = 180; player.dizzy = 0;
-            if (items.speed > 0) { player.speed = 4.5; items.speed--; }
-            else player.speed = 3;
-            if (items.shield > 0) { player.shield = items.shield; items.shield = 0; }
-            else player.shield = 0;
-            if (items.life > 0) { lives = Math.min(5, lives+2); items.life--; }
-            if (items.time > 0) { levelTime += 30; items.time--; }
+            player.speed = items.speed > 0 ? 4.5 : 3;
+            player.shield = items.shield > 0 ? 1 : 0;
+            if (items.shield > 0) items.shield--;
             
             // 更新终点位置
             endPt.x = isScrolling ? worldW - 70 : 530;
@@ -368,12 +371,18 @@
                 }
             }
             
-            // 生成金币
-            coinList = []; const cc = 2 + Math.floor((lvl-1)/10)*2;
-            for (let i=0; i<cc; i++) {
+            // 生成金币 - 确保生成指定数量
+            coinList = []; 
+            const cc = 2 + Math.floor((lvl-1)/10)*2;
+            let attempts = 0;
+            while (coinList.length < cc && attempts < cc * 3) {
+                attempts++;
                 const x = isScrolling ? 150 + Math.random()*(worldW-300) : 80 + Math.random()*(W-160);
                 const y = 60 + Math.random()*(H-120);
-                if (Math.abs(x-50)>50 && Math.abs(x-endPt.x)>50) coinList.push(new Coin(x, y));
+                // 检查是否与起点终点太近
+                if (Math.abs(x-50) < 50) continue;
+                if (Math.abs(x-endPt.x) < 50) continue;
+                coinList.push(new Coin(x, y));
             }
             
             particles = [];
@@ -523,7 +532,7 @@
             document.getElementById('gameOverScreen').style.display = 'none';
             document.getElementById('actionBtn').textContent = '重新开始';
             gameState = 'playing';
-            level = startLvl; lives = 5; coins = 0; totalTime = 0;
+            level = startLvl; lives = maxLives; coins = 0; totalTime = 0;
             Object.keys(items).forEach(k => items[k] = 0);
             Object.keys(keys).forEach(k => keys[k] = false);
             initLevel(startLvl);
@@ -610,7 +619,14 @@
         
         function buy(type, price) {
             if (coins >= price) {
-                coins -= price; items[type]++;
+                if (type === 'life') {
+                    // 生命药水：永久增加最大生命值+2
+                    maxLives += 2;
+                    updateUI();
+                } else {
+                    items[type]++;
+                }
+                coins -= price;
                 document.getElementById('shopCoins').textContent = coins;
                 updateUI();
             }
@@ -618,7 +634,23 @@
         
         function closeShop() {
             document.getElementById('shopScreen').style.display = 'none';
-            levelComplete();
+            // 从商店关进入下一关，不再检查商店
+            nextLevelAfterShop();
+        }
+        
+        function nextLevelAfterShop() {
+            clearInterval(timerInterval);
+            if (level >= 100) { victory(); return; }
+            level++;
+            initLevel(level);
+            startGameLoop();
+            timerInterval = setInterval(() => {
+                if (gameState === 'playing') {
+                    levelTime--; totalTime++;
+                    if (levelTime <= 0) gameOver();
+                    updateUI();
+                }
+            }, 1000);
         }
         
         // ==================== 排行榜 ====================
