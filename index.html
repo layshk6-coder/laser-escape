@@ -153,6 +153,7 @@
         // 基础设置
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const W = 600, H = 400;
         
         // 最大生命值
         let maxLives = 5;
@@ -162,7 +163,7 @@
         let level = 1, lives = 5, coins = 0;
         let levelTime = 60, totalTime = 0;
         let lastTime = 0, timerInterval = null;
-        let isScrolling = false, worldW = 600, camX = 0;
+        let isScrolling = false, worldW = W, camX = 0;
         
         // 玩家
         const player = { x: 50, y: 180, size: 18, speed: 3, dizzy: 0, shield: 0 };
@@ -214,43 +215,19 @@
                 }
             }
             draw() {
-                const cw = canvas.width;
-                const ch = canvas.height;
-                if (this.x + this.w < 0 || this.x > cw) return;
+                const sx = this.x - camX;
+                if (sx + this.w < 0 || sx > W) return;
                 ctx.save();
                 const c = L_COLORS[this.typeIdx];
-                
-                // 关键激光特殊视觉效果
-                if (this.isKey) {
-                    if (this.active) {
-                        // 关键激光开启：红色脉冲边框
-                        ctx.shadowBlur = 25; ctx.shadowColor = '#ff0000';
-                        ctx.fillStyle = c; ctx.fillRect(this.x, this.y, this.w, this.h);
-                        // 脉冲边框
-                        ctx.strokeStyle = '#ff0000';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(this.x - 1, this.y - 1, this.w + 2, this.h + 2);
-                    } else {
-                        // 关键激光关闭：深红色虚线框（仍可辨认）
-                        ctx.fillStyle = c + '30';
-                        ctx.fillRect(this.x, this.y, this.w, this.h);
-                        ctx.strokeStyle = '#ff0000';
-                        ctx.setLineDash([3, 3]);
-                        ctx.lineWidth = 1;
-                        ctx.strokeRect(this.x, this.y, this.w, this.h);
-                    }
+                if (this.active) {
+                    ctx.shadowBlur = 20; ctx.shadowColor = c;
+                    ctx.fillStyle = c; ctx.fillRect(sx, this.y, this.w, this.h);
                 } else {
-                    // 辅助激光普通样式
-                    if (this.active) {
-                        ctx.shadowBlur = 15; ctx.shadowColor = c;
-                        ctx.fillStyle = c; ctx.fillRect(this.x, this.y, this.w, this.h);
-                    } else {
-                        ctx.fillStyle = c + '40';
-                        ctx.setLineDash([5, 5]);
-                        ctx.strokeStyle = c + '60';
-                        ctx.fillRect(this.x, this.y, this.w, this.h);
-                        ctx.strokeRect(this.x, this.y, this.w, this.h);
-                    }
+                    ctx.fillStyle = c + '40';
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeStyle = c + '60';
+                    ctx.fillRect(sx, this.y, this.w, this.h);
+                    ctx.strokeRect(sx, this.y, this.w, this.h);
                 }
                 ctx.restore();
             }
@@ -290,37 +267,37 @@
                 return true;
             }
             draw() {
-                const cw = canvas.width;
-                if (this.x + this.size < 0 || this.x > cw) return;
+                const sx = this.x - camX;
+                if (sx + this.size < 0 || sx > W) return;
                 if (this.exploding) {
-                    const g = ctx.createRadialGradient(this.x + 11, this.y + 11, 0, this.x + 11, this.y + 11, this.r);
+                    const g = ctx.createRadialGradient(sx+11, this.y+11, 0, sx+11, this.y+11, this.r);
                     g.addColorStop(0, 'rgba(255,100,0,0.8)'); g.addColorStop(1, 'rgba(255,0,0,0)');
                     ctx.fillStyle = g;
-                    ctx.beginPath(); ctx.arc(this.x + 11, this.y + 11, this.r, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(sx+11, this.y+11, this.r, 0, Math.PI*2); ctx.fill();
                 } else {
                     ctx.save();
                     ctx.shadowBlur = 12; ctx.shadowColor = '#ff4400';
-                    ctx.fillStyle = '#333'; ctx.fillRect(this.x, this.y, this.size, this.size);
+                    ctx.fillStyle = '#333'; ctx.fillRect(sx, this.y, this.size, this.size);
                     
                     // 引信启动后快速闪烁
                     if (this.fuseStarted) {
-                        const flash = Math.sin(this.t / 50) > 0;
+                        const flash = Math.sin(this.t/50) > 0;
                         ctx.fillStyle = flash ? '#ff0000' : '#ffff00';
                     } else {
-                        const flash = Math.sin(this.t / 150) > 0;
+                        const flash = Math.sin(this.t/150) > 0;
                         ctx.fillStyle = flash ? '#ff0000' : '#ff8800';
                     }
                     
-                    ctx.fillRect(this.x + 4, this.y + 4, this.size - 8, this.size - 8);
+                    ctx.fillRect(sx+4, this.y+4, this.size-8, this.size-8);
                     
                     // 显示引信倒计时
                     if (this.fuseStarted) {
                         const cd = Math.ceil(this.fuseTime / 1000);
                         ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center';
-                        ctx.fillText(cd, this.x + 11, this.y + 17);
+                        ctx.fillText(cd, sx+11, this.y+17);
                     } else if (this.t > 2000) {
-                        const cd = Math.ceil((3000 - this.t) / 1000);
-                        if (cd > 0) { ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center'; ctx.fillText(cd, this.x + 11, this.y + 16); }
+                        const cd = Math.ceil((3000-this.t)/1000);
+                        if (cd > 0) { ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center'; ctx.fillText(cd, sx+11, this.y+16); }
                     }
                     ctx.restore();
                 }
@@ -351,24 +328,22 @@
         }
         
         class Coin {
-            constructor(x, y) { this.x = x; this.y = y; this.s = 14; this.collected = false; this.o = Math.random() * Math.PI * 2; }
+            constructor(x, y) { this.x = x; this.y = y; this.s = 14; this.collected = false; this.o = Math.random()*Math.PI*2; }
             draw(t) {
                 if (this.collected) return;
-                const cw = canvas.width;
-                if (this.x + this.s < 0 || this.x > cw) return;
-                const bob = Math.sin(t / 200 + this.o) * 3;
-                ctx.save();
-                ctx.shadowBlur = 12; ctx.shadowColor = '#ffd700';
+                const sx = this.x - camX, bob = Math.sin(t/200+this.o)*3;
+                if (sx + this.s < 0 || sx > W) return;
+                ctx.save(); ctx.shadowBlur = 12; ctx.shadowColor = '#ffd700';
                 ctx.fillStyle = '#ffd700';
-                ctx.beginPath(); ctx.arc(this.x + 7, this.y + 7 + bob, 7, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(sx+7, this.y+7+bob, 7, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = '#ffed4a';
-                ctx.beginPath(); ctx.arc(this.x + 7, this.y + 7 + bob, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(sx+7, this.y+7+bob, 4, 0, Math.PI*2); ctx.fill();
                 ctx.restore();
             }
             collect(px, py) {
                 if (this.collected) return false;
-                const dx = (px + 9) - (this.x + 7), dy = (py + 9) - (this.y + 7);
-                if (Math.sqrt(dx * dx + dy * dy) < 15) { this.collected = true; return true; }
+                const dx = (px+9)-(this.x+7), dy = (py+9)-(this.y+7);
+                if (Math.sqrt(dx*dx+dy*dy) < 15) { this.collected = true; return true; }
                 return false;
             }
         }
@@ -377,35 +352,14 @@
         
         function initLevel(lvl) {
             level = lvl;
-            // 根据关卡阶段设置画布大小
-            if (lvl <= 40) {
-                canvas.width = W;
-                canvas.height = H;
-                worldW = W;
-                isScrolling = false;
-            } else if (lvl <= 60) {
-                canvas.width = 700;
-                canvas.height = 450;
-                worldW = 700;
-                isScrolling = false;
-            } else if (lvl <= 80) {
-                canvas.width = 800;
-                canvas.height = 500;
-                worldW = 800;
-                isScrolling = false;
-            } else {
-                canvas.width = 900;
-                canvas.height = 550;
-                worldW = 900;
-                isScrolling = false;
-            }
-            
+            isScrolling = lvl >= 20;
+            worldW = isScrolling ? 1600 + (lvl-20)*100 : W;
             camX = 0;
             
-            // 重置所有按键状态
+            // 重置所有按键状态 - 防止按键残留
             Object.keys(keys).forEach(k => keys[k] = false);
             
-            document.getElementById('progressBox').style.display = 'none';
+            document.getElementById('progressBox').style.display = isScrolling ? 'inline' : 'none';
             
             // 重置生命和时间
             lives = maxLives;
@@ -415,404 +369,105 @@
             if (items.time > 0) { levelTime += 30; items.time--; }
             
             // 重置玩家
-            player.x = 50; 
-            player.y = Math.floor(canvas.height / 2) - 10;
-            player.dizzy = 0;
+            player.x = 50; player.y = 180; player.dizzy = 0;
             player.speed = items.speed > 0 ? 4.5 : 3;
             player.shield = items.shield > 0 ? 1 : 0;
             if (items.shield > 0) items.shield--;
             
             // 更新终点位置
-            endPt.x = worldW - 70;
-            endPt.y = Math.floor(canvas.height / 2) - 20;
+            endPt.x = isScrolling ? worldW - 70 : 530;
             
-            // 生成关卡
-            generateLevel(lvl);
-            
-            particles = [];
-            updateUI();
-        }
-        
-        // 生成完整关卡
-        function generateLevel(lvl) {
+            // 生成激光 - 基于游戏性原则的合理布局
             lasers = [];
-            bombs = [];
-            coinList = [];
+            const baseInt = Math.max(600, 2000 - lvl * 12);
             
-            const cw = canvas.width;
-            const ch = canvas.height;
+            // 安全区域：起点和终点附近不能放激光
+            const safeZoneStart = 100;
+            const safeZoneEnd = isScrolling ? worldW - 100 : W - 100;
             
-            // 基础参数
-            const baseInt = Math.max(400, 1600 - lvl * 12);
+            // 激光类型根据关卡选择（每15关解锁新颜色）
             const maxType = Math.min(4, Math.floor((lvl - 1) / 15));
             
-            // 确定阶段
-            const stage = Math.floor((lvl - 1) / 10) + 1; // 1-10
+            // 通道宽度随关卡递减（关卡越高通道越窄）
+            const passageWidth = Math.max(50, 90 - lvl * 0.4);
             
-            if (stage === 1) {
-                // ========== 阶段1：直线防线（1-10关）==========
-                generateStraightLine(lvl, cw, ch, baseInt, maxType);
-            } else if (stage === 2) {
-                // ========== 阶段2：分支选择（11-20关）==========
-                generateBranchPath(lvl, cw, ch, baseInt, maxType);
-            } else if (stage === 3) {
-                // ========== 阶段3：环形迷宫（21-30关）==========
-                generateRingMaze(lvl, cw, ch, baseInt, maxType);
-            } else if (stage === 4) {
-                // ========== 阶段4：多层结构（31-40关）==========
-                generateMultiLayer(lvl, cw, ch, baseInt, maxType);
-            } else if (stage === 5) {
-                // ========== 阶段5：动态防线（41-50关）==========
-                generateDynamicDefense(lvl, cw, ch, baseInt, maxType, true);
-            } else if (stage === 6) {
-                // ========== 阶段6：极限挑战（51-60关）==========
-                generateDynamicDefense(lvl, cw, ch, baseInt, maxType, true);
-            } else if (stage === 7) {
-                // ========== 阶段7：快速动态（61-70关）==========
-                generateDynamicDefense(lvl, cw, ch, baseInt * 0.8, maxType, true);
-            } else if (stage === 8) {
-                // ========== 阶段8：组合激光（71-80关）==========
-                generateComboLasers(lvl, cw, ch, baseInt * 0.7, maxType);
-            } else if (stage === 9) {
-                // ========== 阶段9：极限组合（81-90关）==========
-                generateComboLasers(lvl, cw, ch, baseInt * 0.6, maxType);
-            } else {
-                // ========== 阶段10：大师模式（91-100关）==========
-                generateMasterMode(lvl, cw, ch, baseInt * 0.5, maxType);
-            }
-            
-            // 生成炸弹
-            if (lvl >= 5) {
-                const bc = Math.min(5, 1 + Math.floor(lvl / 12));
-                for (let i = 0; i < bc; i++) {
-                    const x = 150 + Math.random() * (worldW - 300);
-                    const y = 60 + Math.random() * (ch - 120);
-                    if (Math.abs(x - 50) > 60 && Math.abs(x - endPt.x) > 60) {
-                        bombs.push(new Bomb(x, y));
+            if (!isScrolling) {
+                // ========== 普通关卡：横向分层布局 ==========
+                // 将屏幕分成若干行，每行留出通道
+                const numRows = Math.min(4, 2 + Math.floor(lvl / 25));
+                const rowSpacing = (H - 100) / numRows;
+                
+                for (let row = 0; row < numRows; row++) {
+                    const y = 60 + row * rowSpacing + rowSpacing / 2;
+                    // 激光类型随深度增加
+                    const laserType = Math.min(maxType, Math.floor(row / 2));
+                    
+                    // 计算通道位置（每关不同，但固定）
+                    const passagePos = ((lvl * 137 + row * 53) % (W - passageWidth - 200)) + 100;
+                    
+                    // 左侧激光
+                    if (passagePos > safeZoneStart + 20) {
+                        lasers.push(new Laser(0, y, passagePos - 10, 5, laserType, baseInt, row * 150));
+                    }
+                    // 右侧激光
+                    if (passagePos + passageWidth < safeZoneEnd - 20) {
+                        lasers.push(new Laser(passagePos + passageWidth + 10, y, W - passagePos - passageWidth - 10, 5, laserType, baseInt, row * 150 + baseInt / 2));
                     }
                 }
-            }
-            
-            // 生成金币
-            const cc = 2 + Math.floor((lvl - 1) / 10) * 2;
-            let attempts = 0;
-            while (coinList.length < cc && attempts < cc * 5) {
-                attempts++;
-                const x = 100 + Math.random() * (worldW - 200);
-                const y = 50 + Math.random() * (ch - 100);
-                if (Math.abs(x - 50) > 40 && Math.abs(x - endPt.x) > 40) {
-                    coinList.push(new Coin(x, y));
-                }
-            }
-        }
-        
-        // 阶段1：直线防线
-        function generateStraightLine(lvl, cw, ch, baseInt, maxType) {
-            const numKey = Math.min(4, 2 + Math.floor(lvl / 5));
-            const numAux = Math.min(5, 2 + Math.floor(lvl / 3));
-            
-            // 关键激光 - 垂直防线（必须穿越）
-            const startX = 120;
-            const endX = cw - 120;
-            const spacing = (endX - startX) / (numKey + 1);
-            
-            for (let i = 0; i < numKey; i++) {
-                const x = startX + (i + 1) * spacing;
-                const type = Math.min(maxType, Math.floor(i / 2));
                 
-                // 关键激光：完整垂直贯穿，中间留通道
-                const passageY = 60 + ((lvl * 17 + i * 31) % (ch - 140));
-                const passageHeight = Math.max(50, 90 - lvl * 3);
-                
-                // 标记为关键激光（通过extended属性）
-                const upper = new Laser(x, 0, 5, passageY, type, baseInt, i * 150);
-                upper.isKey = true;
-                lasers.push(upper);
-                
-                const lower = new Laser(x, passageY + passageHeight, 5, ch - passageY - passageHeight, type, baseInt, i * 150 + baseInt / 2);
-                lower.isKey = true;
-                lasers.push(lower);
-            }
-            
-            // 辅助激光 - 横向干扰（可绕过）
-            for (let i = 0; i < numAux; i++) {
-                const y = 80 + ((lvl * 23 + i * 37) % (ch - 160));
-                const gapX = 100 + ((lvl * 29 + i * 43) % (cw - 300));
-                const gapWidth = 80 + ((lvl * 11 + i) % 40);
-                
-                // 左段
-                lasers.push(new Laser(0, y, gapX, 4, Math.min(2, maxType), baseInt * 1.2, i * 200));
-                // 右段
-                lasers.push(new Laser(gapX + gapWidth, y, cw - gapX - gapWidth, 4, Math.min(2, maxType), baseInt * 1.2, i * 200 + baseInt / 3));
-            }
-        }
-        
-        // 阶段2：分支选择
-        function generateBranchPath(lvl, cw, ch, baseInt, maxType) {
-            // 第一道关键激光（入口）
-            const entryX = 150;
-            const type1 = Math.min(maxType, 0);
-            const passageY1 = Math.floor(ch / 3);
-            const passageH1 = Math.max(50, 85 - lvl * 2);
-            
-            const key1a = new Laser(entryX, 0, 5, passageY1, type1, baseInt, 0);
-            key1a.isKey = true;
-            lasers.push(key1a);
-            const key1b = new Laser(entryX, passageY1 + passageH1, 5, ch - passageY1 - passageH1, type1, baseInt, baseInt / 2);
-            key1b.isKey = true;
-            lasers.push(key1b);
-            
-            // 分支点后的第二道关键激光
-            const branchX = cw - 180;
-            const type2 = Math.min(maxType, 1);
-            
-            // 上分支通道
-            const upperPassageY = Math.floor(ch / 4);
-            const upperPassageH = Math.max(45, 75 - lvl * 2);
-            const key2a_upper = new Laser(branchX, 0, 5, upperPassageY, type2, baseInt, 200);
-            key2a_upper.isKey = true;
-            lasers.push(key2a_upper);
-            const key2b_upper = new Laser(branchX, upperPassageY + upperPassageH, 5, ch / 2 - upperPassageY - upperPassageH, type2, baseInt, 200 + baseInt / 2);
-            key2b_upper.isKey = true;
-            lasers.push(key2b_upper);
-            
-            // 下分支通道
-            const lowerPassageY = Math.floor(ch * 3 / 4) - upperPassageH;
-            const key2a_lower = new Laser(branchX, ch / 2, 5, lowerPassageY - ch / 2, type2, baseInt, 300);
-            key2a_lower.isKey = true;
-            lasers.push(key2a_lower);
-            const key2b_lower = new Laser(branchX, lowerPassageY + upperPassageH, 5, ch - lowerPassageY - upperPassageH, type2, baseInt, 300 + baseInt / 2);
-            key2b_lower.isKey = true;
-            lasers.push(key2b_lower);
-            
-            // 辅助激光 - 布置在分支路径上增加选择难度
-            // 上路径障碍（危险但短）
-            for (let i = 0; i < 3; i++) {
-                const x = 200 + i * 50;
-                const y = Math.floor(ch / 4) - 30 + ((lvl + i) % 3) * 20;
-                lasers.push(new Laser(x, y, 40, 4, 0, baseInt * 0.8, i * 100));
-            }
-            
-            // 下路径障碍（安全但长）
-            for (let i = 0; i < 2; i++) {
-                const x = 220 + i * 80;
-                const y = Math.floor(ch * 3 / 4) - 20;
-                lasers.push(new Laser(x, y, 60, 4, 0, baseInt * 0.9, i * 150));
-            }
-        }
-        
-        // 阶段3：环形迷宫
-        function generateRingMaze(lvl, cw, ch, baseInt, maxType) {
-            const numKey = 3;
-            const centerX = Math.floor(cw / 2);
-            const centerY = Math.floor(ch / 2);
-            
-            // 关键激光形成三角形/环形
-            // 关键1：左侧垂直
-            const key1X = centerX - 100;
-            const passageY1 = centerY - 40;
-            const passageH = Math.max(45, 75 - lvl * 2);
-            const k1a = new Laser(key1X, 0, 5, passageY1, maxType, baseInt, 0);
-            k1a.isKey = true;
-            lasers.push(k1a);
-            const k1b = new Laser(key1X, passageY1 + passageH, 5, ch - passageY1 - passageH, maxType, baseInt, baseInt / 2);
-            k1b.isKey = true;
-            lasers.push(k1b);
-            
-            // 关键2：右上斜向
-            const key2X = centerX + 50;
-            const passageY2 = 60;
-            const k2a = new Laser(key2X, 0, 5, passageY2, maxType, baseInt, 150);
-            k2a.isKey = true;
-            lasers.push(k2a);
-            const k2b = new Laser(key2X, passageY2 + passageH, 5, centerY - 60 - passageH, maxType, baseInt, 150 + baseInt / 2);
-            k2b.isKey = true;
-            lasers.push(k2b);
-            
-            // 关键3：右下斜向
-            const key3X = centerX + 80;
-            const passageY3 = centerY + 40;
-            const k3a = new Laser(key3X, centerY + 40, 5, passageY3 - centerY - 40, maxType, baseInt, 300);
-            k3a.isKey = true;
-            lasers.push(k3a);
-            const k3b = new Laser(key3X, passageY3 + passageH, 5, ch - passageY3 - passageH, maxType, baseInt, 300 + baseInt / 2);
-            k3b.isKey = true;
-            lasers.push(k3b);
-            
-            // 辅助激光 - 环形障碍
-            for (let i = 0; i < 6; i++) {
-                const angle = (i / 6) * Math.PI * 2;
-                const radius = 80 + ((lvl + i) % 3) * 15;
-                const x = centerX + Math.cos(angle) * radius;
-                const y = centerY + Math.sin(angle) * radius;
-                if (x > 50 && x < cw - 50 && y > 50 && y < ch - 50) {
-                    lasers.push(new Laser(x, y, 30, 4, Math.min(1, maxType), baseInt * 0.9, i * 100));
-                }
-            }
-        }
-        
-        // 阶段4：多层结构
-        function generateMultiLayer(lvl, cw, ch, baseInt, maxType) {
-            // 每层高度
-            const layerHeight = Math.floor(ch / 3);
-            
-            // 第一层入口
-            const key1Y = layerHeight;
-            const passageX1 = 80 + ((lvl * 13) % (cw - 200));
-            const k1a = new Laser(0, key1Y, passageX1, 5, maxType, baseInt, 0);
-            k1a.isKey = true;
-            lasers.push(k1a);
-            const k1b = new Laser(passageX1 + 60, key1Y, cw - passageX1 - 60, 5, maxType, baseInt, baseInt / 2);
-            k1b.isKey = true;
-            lasers.push(k1b);
-            
-            // 第二层分隔
-            const key2Y = layerHeight * 2;
-            const passageX2 = 100 + ((lvl * 29) % (cw - 250));
-            const k2a = new Laser(0, key2Y, passageX2, 5, maxType, baseInt, 200);
-            k2a.isKey = true;
-            lasers.push(k2a);
-            const k2b = new Laser(passageX2 + 55, key2Y, cw - passageX2 - 55, 5, maxType, baseInt, 200 + baseInt / 2);
-            k2b.isKey = true;
-            lasers.push(k2b);
-            
-            // 第三层出口
-            const key3Y = ch - 60;
-            const passageX3 = 90 + ((lvl * 37) % (cw - 220));
-            const k3a = new Laser(0, key3Y, passageX3, 5, maxType, baseInt, 400);
-            k3a.isKey = true;
-            lasers.push(k3a);
-            const k3b = new Laser(passageX3 + 65, key3Y, cw - passageX3 - 65, 5, maxType, baseInt, 400 + baseInt / 2);
-            k3b.isKey = true;
-            lasers.push(k3b);
-            
-            // 每层内部的辅助激光
-            for (let layer = 0; layer < 3; layer++) {
-                const yBase = layer * layerHeight + 40;
-                for (let i = 0; i < 3; i++) {
-                    const x = 150 + i * 120 + ((lvl + layer * 10 + i) % 40);
-                    const y = yBase + ((lvl + i) % (layerHeight - 80));
-                    lasers.push(new Laser(x, y, 40, 4, Math.min(2, maxType), baseInt * 1.1, layer * 300 + i * 100));
-                }
-            }
-        }
-        
-        // 阶段5-7：动态防线
-        function generateDynamicDefense(lvl, cw, ch, baseInt, maxType, hasMovement) {
-            const numKey = Math.min(5, 3 + Math.floor((lvl - 40) / 10));
-            
-            // 关键激光 - 垂直防线
-            const startX = 140;
-            const endX = cw - 140;
-            const spacing = (endX - startX) / (numKey + 1);
-            
-            for (let i = 0; i < numKey; i++) {
-                const x = startX + (i + 1) * spacing;
-                const type = Math.min(maxType, Math.floor((lvl - 40) / 10) + Math.floor(i / 2));
-                
-                const passageY = 60 + ((lvl * 17 + i * 31 + Math.floor(Date.now() / 1000)) % (ch - 140));
-                const passageHeight = Math.max(40, 70 - (lvl - 40) * 0.5);
-                
-                const k1 = new Laser(x, 0, 5, passageY, type, baseInt, i * 120);
-                k1.isKey = true;
-                if (hasMovement) k1.moveSpeed = 0.5 + (lvl - 40) * 0.05;
-                lasers.push(k1);
-                
-                const k2 = new Laser(x, passageY + passageHeight, 5, ch - passageY - passageHeight, type, baseInt, i * 120 + baseInt / 2);
-                k2.isKey = true;
-                if (hasMovement) k2.moveSpeed = 0.5 + (lvl - 40) * 0.05;
-                lasers.push(k2);
-            }
-            
-            // 大量辅助激光
-            const numAux = Math.min(14, 8 + Math.floor((lvl - 40) / 5));
-            for (let i = 0; i < numAux; i++) {
-                const isVertical = i % 2 === 0;
-                if (isVertical) {
-                    const x = 120 + ((lvl * 23 + i * 41) % (cw - 240));
-                    const gapY = 80 + ((lvl * 29 + i * 37) % (ch - 160));
-                    lasers.push(new Laser(x, 0, 5, gapY, Math.min(2, maxType), baseInt * 0.9, i * 80));
-                    lasers.push(new Laser(x, gapY + 50, 5, ch - gapY - 50, Math.min(2, maxType), baseInt * 0.9, i * 80 + baseInt / 3));
-                } else {
-                    const y = 60 + ((lvl * 31 + i * 43) % (ch - 120));
-                    lasers.push(new Laser(0, y, cw, 4, Math.min(2, maxType), baseInt * 1.1, i * 100));
-                }
-            }
-        }
-        
-        // 阶段8-9：组合激光
-        function generateComboLasers(lvl, cw, ch, baseInt, maxType) {
-            const numGroups = 4;
-            const groupSpacing = (cw - 300) / numGroups;
-            
-            for (let g = 0; g < numGroups; g++) {
-                const groupX = 150 + g * groupSpacing;
-                
-                // 每组：关键激光 + 辅助激光组合
-                const passageY = 60 + ((lvl * 19 + g * 47) % (ch - 140));
-                const passageH = Math.max(35, 60 - (lvl - 70) * 0.5);
-                
-                // 关键激光（必须连续穿越）
-                for (let i = 0; i < 2; i++) {
-                    const x = groupX + i * 15;
-                    const k1 = new Laser(x, 0, 5, passageY, maxType, baseInt, g * 200 + i * 50);
-                    k1.isKey = true;
-                    lasers.push(k1);
-                    const k2 = new Laser(x, passageY + passageH, 5, ch - passageY - passageH, maxType, baseInt, g * 200 + i * 50 + baseInt / 2);
-                    k2.isKey = true;
-                    lasers.push(k2);
-                }
-            }
-            
-            // 辅助激光网格
-            for (let i = 0; i < 12; i++) {
-                const x = 100 + ((lvl * 17 + i * 29) % (cw - 200));
-                const y = 60 + ((lvl * 23 + i * 31) % (ch - 120));
-                lasers.push(new Laser(x, y, 35, 3, Math.min(3, maxType), baseInt * 0.8, i * 60));
-            }
-        }
-        
-        // 阶段10：大师模式
-        function generateMasterMode(lvl, cw, ch, baseInt, maxType) {
-            // 极限难度：快速切换 + 大量激光 + 随机元素
-            generateComboLasers(lvl, cw, ch, baseInt, maxType);
-            
-            // 添加额外的干扰激光
-            for (let i = 0; i < 8; i++) {
-                const x = Math.random() * (cw - 100) + 50;
-                const y = Math.random() * (ch - 100) + 50;
-                const w = 20 + Math.random() * 40;
-                const h = 3;
-                lasers.push(new Laser(x, y, w, h, maxType, baseInt * 0.6, i * 40));
-            }
-        }
-                const numBarriers = 4 + Math.floor((lvl - 20) / 12);
-                const barrierSpacing = (worldW - 400) / numBarriers;
-                
-                for (let i = 0; i < numBarriers; i++) {
-                    const barrierX = 200 + i * barrierSpacing;
-                    const laserType = Math.min(maxType, Math.floor(i / 2));
-                    const barrierType = (lvl + i) % 3;
-                    
-                    if (barrierType === 0) {
-                        // 中央单通道
-                        const passageY = H / 2 - passageWidth / 2 + ((lvl * 7 + i * 13) % 40 - 20);
-                        lasers.push(new Laser(barrierX, 0, 5, passageY, laserType, baseInt, i * 100));
-                        lasers.push(new Laser(barrierX, passageY + passageWidth, 5, H - passageY - passageWidth, laserType, baseInt, i * 100 + baseInt / 2));
-                    } else if (barrierType === 1) {
-                        // 上下双通道
-                        const upperY = 60 + ((lvl * 17 + i * 29) % (H / 2 - passageWidth - 80));
-                        const lowerY = H / 2 + 40 + ((lvl * 23 + i * 31) % (H / 2 - passageWidth - 80));
+                // 高难度关卡（15关后）添加纵向障碍激光
+                if (lvl > 15) {
+                    const numVCols = Math.min(2, Math.floor((lvl - 15) / 20));
+                    for (let c = 0; c < numVCols; c++) {
+                        // 纵向激光位置在安全区外
+                        const x = 150 + ((lvl + c * 37) % (W - 300));
+                        // 留出垂直通道
+                        const vGapY = 100 + ((lvl * 23 + c * 71) % (H - 200));
+                        const vGapSize = 60;
                         
-                        lasers.push(new Laser(barrierX, 0, 5, upperY, laserType, baseInt, i * 120));
-                        lasers.push(new Laser(barrierX, upperY + passageWidth, 5, lowerY - upperY - passageWidth, laserType, baseInt, i * 120 + baseInt / 3));
-                        lasers.push(new Laser(barrierX, lowerY + passageWidth, 5, H - lowerY - passageWidth, laserType, baseInt, i * 120 + baseInt * 2 / 3));
+                        // 上半段
+                        lasers.push(new Laser(x, 0, 5, vGapY - vGapSize / 2, maxType, baseInt * 1.2, c * 200));
+                        // 下半段
+                        lasers.push(new Laser(x, vGapY + vGapSize / 2, 5, H - vGapY - vGapSize / 2, maxType, baseInt * 1.2, c * 200 + baseInt));
+                    }
+                }
+            } else {
+                // ========== 卷轴关卡：分组障碍布局 ==========
+                const numGroups = 3 + Math.floor((lvl - 20) / 20);
+                
+                for (let g = 0; g < numGroups; g++) {
+                    // 每组位置
+                    const groupCenter = 300 + g * ((worldW - 600) / numGroups);
+                    const groupSeed = lvl * 100 + g * 33;
+                    
+                    // 根据关卡选择组类型
+                    const groupType = (lvl + g) % 3;
+                    
+                    if (groupType === 0) {
+                        // 类型0：双横向激光，中间通道
+                        const gapY = H / 2;
+                        const gapSize = passageWidth;
+                        lasers.push(new Laser(groupCenter - 100, gapY - gapSize / 2, 200, 5, maxType, baseInt, g * 250));
+                        lasers.push(new Laser(groupCenter - 100, gapY + gapSize / 2, 200, 5, maxType, baseInt, g * 250 + baseInt / 2));
+                    } else if (groupType === 1) {
+                        // 类型1：之字形通道（3横激光错位）
+                        const segmentWidth = 60;
+                        for (let i = 0; i < 3; i++) {
+                            const y = 60 + i * ((H - 120) / 3) + 40;
+                            const offsetX = (i % 2 === 0) ? -30 : 30;
+                            // 留出过道
+                            lasers.push(new Laser(groupCenter - 100 + offsetX, y, 200 - segmentWidth, 5, maxType, baseInt, g * 200 + i * 120));
+                        }
                     } else {
-                        // 动态偏移通道
-                        const passageY = 80 + ((lvl * 19 + i * 37) % (H - passageWidth - 160));
-                        const offset = (i % 2 === 0) ? -20 : 20;
-                        lasers.push(new Laser(barrierX + offset, 0, 5, passageY, laserType, baseInt, i * 140));
-                        lasers.push(new Laser(barrierX - offset, passageY + passageWidth, 5, H - passageY - passageWidth, laserType, baseInt, i * 140 + baseInt / 2));
+                        // 类型2：纵向栅栏（留横向通道）
+                        const numBars = 3;
+                        for (let b = 0; b < numBars; b++) {
+                            const x = groupCenter - 60 + b * 60;
+                            // 中间留空
+                            const gapSize = 50;
+                            lasers.push(new Laser(x, 0, 5, H / 2 - gapSize / 2, maxType, baseInt * 1.1, g * 180 + b * 80));
+                            lasers.push(new Laser(x, H / 2 + gapSize / 2, 5, H / 2 - gapSize / 2, maxType, baseInt * 1.1, g * 180 + b * 80));
+                        }
                     }
                 }
             }
@@ -822,8 +477,8 @@
             if (lvl >= 5) {
                 const bc = Math.min(5, 1 + Math.floor(lvl/12));
                 for (let i=0; i<bc; i++) {
-                    const x = 100 + Math.random()*(worldW-200);
-                    const y = 60 + Math.random()*(canvas.height-120);
+                    const x = isScrolling ? 200 + Math.random()*(worldW-400) : 100 + Math.random()*(W-200);
+                    const y = 60 + Math.random()*(H-120);
                     if (Math.abs(x-50)>60 && Math.abs(x-endPt.x)>60) bombs.push(new Bomb(x, y));
                 }
             }
@@ -834,8 +489,8 @@
             let attempts = 0;
             while (coinList.length < cc && attempts < cc * 3) {
                 attempts++;
-                const x = 80 + Math.random()*(worldW-160);
-                const y = 60 + Math.random()*(canvas.height-120);
+                const x = isScrolling ? 150 + Math.random()*(worldW-300) : 80 + Math.random()*(W-160);
+                const y = 60 + Math.random()*(H-120);
                 // 检查是否与起点终点太近
                 if (Math.abs(x-50) < 50) continue;
                 if (Math.abs(x-endPt.x) < 50) continue;
@@ -870,8 +525,14 @@
                 dy = (Math.random()-0.5)*player.speed;
             }
             player.x += dx; player.y += dy;
-            player.x = Math.max(0, Math.min(worldW - player.size, player.x));
-            player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+            player.x = Math.max(0, Math.min(worldW-player.size, player.x));
+            player.y = Math.max(0, Math.min(H-player.size, player.y));
+            
+            // 相机
+            if (isScrolling) {
+                camX = Math.max(0, Math.min(worldW-W, player.x - W/3));
+                document.getElementById('progress').textContent = Math.floor((player.x/worldW)*100);
+            }
             
             // 更新对象
             lasers.forEach(l => l.update(dt, level));
@@ -894,7 +555,7 @@
                 lives -= dmg;
                 if (bombs.some(b => b.hit(player.x, player.y) > 0)) player.dizzy = 1500;
                 updateUI();
-                player.x = 50; player.y = Math.floor(canvas.height / 2) - 10;
+                player.x = 50; player.y = 180; camX = 0;
                 if (lives <= 0) gameOver();
             }
             
@@ -916,47 +577,46 @@
         }
         
         function draw() {
-            const cw = canvas.width;
-            const ch = canvas.height;
-            
-            ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0, 0, cw, ch);
+            ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0, 0, W, H);
             
             // 网格
             ctx.strokeStyle = 'rgba(0,212,255,0.05)';
-            for (let x = 0; x < cw; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ch); ctx.stroke(); }
-            for (let y = 0; y < ch; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cw, y); ctx.stroke(); }
+            for (let x=-camX%40; x<W; x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+            for (let y=0; y<H; y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
             
             // 起点
-            const ssx = startPt.x;
+            const ssx = startPt.x - camX;
             ctx.fillStyle = '#00ff88'; ctx.shadowBlur = 15; ctx.shadowColor = '#00ff88';
             ctx.fillRect(ssx, startPt.y, startPt.w, startPt.h);
             ctx.fillStyle = '#000'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center'; ctx.shadowBlur = 0;
-            ctx.fillText('起', ssx + 20, startPt.y + 25);
+            ctx.fillText('起', ssx+20, startPt.y+25);
             
             // 终点
-            const esx = endPt.x;
-            ctx.fillStyle = '#ff0066'; ctx.shadowBlur = 15; ctx.shadowColor = '#ff0066';
-            ctx.fillRect(esx, endPt.y, endPt.w, endPt.h);
-            ctx.fillStyle = '#fff'; ctx.fillText('终', esx + 20, endPt.y + 25); ctx.shadowBlur = 0;
+            const esx = endPt.x - camX;
+            if (esx > -50 && esx < W) {
+                ctx.fillStyle = '#ff0066'; ctx.shadowBlur = 15; ctx.shadowColor = '#ff0066';
+                ctx.fillRect(esx, endPt.y, endPt.w, endPt.h);
+                ctx.fillStyle = '#fff'; ctx.fillText('终', esx+20, endPt.y+25); ctx.shadowBlur = 0;
+            }
             
             // 游戏对象
             lasers.forEach(l => l.draw());
             bombs.forEach(b => b.draw());
             coinList.forEach(c => c.draw(performance.now()));
             particles.forEach(p => {
-                ctx.globalAlpha = p.life / 25; ctx.fillStyle = p.c;
-                ctx.fillRect(p.x, p.y, 4, 4); ctx.globalAlpha = 1;
+                ctx.globalAlpha = p.life/25; ctx.fillStyle = p.c;
+                ctx.fillRect(p.x-camX, p.y, 4, 4); ctx.globalAlpha = 1;
             });
             
             // 玩家
             ctx.save(); ctx.shadowBlur = 12; ctx.shadowColor = player.color;
             ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.size, player.size);
+            ctx.fillRect(player.x-camX, player.y, player.size, player.size);
             if (player.shield > 0) {
                 ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.arc(player.x + 9, player.y + 9, 16, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(player.x-camX+9, player.y+9, 16, 0, Math.PI*2); ctx.stroke();
             }
-            if (player.dizzy > 0) { ctx.font = '14px Arial'; ctx.fillText('💫', player.x + 9, player.y - 5); }
+            if (player.dizzy > 0) { ctx.font = '14px Arial'; ctx.fillText('💫', player.x-camX+9, player.y-5); }
             ctx.restore();
         }
         
