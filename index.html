@@ -377,28 +377,111 @@
             // 更新终点位置
             endPt.x = isScrolling ? worldW - 70 : 530;
             
-            // 生成激光
-            lasers = []; const baseInt = Math.max(500, 2000 - lvl*12);
-            const rows = Math.min(5, 2 + Math.floor(lvl/10));
-            for (let i=0; i<rows; i++) {
-                const y = 50 + (i+1) * ((H-100)/(rows+1));
-                const ti = Math.min(4, Math.floor((lvl-1)/15) + Math.floor(i/2));
-                const off = (i%2) * baseInt/2;
-                if (isScrolling) {
-                    for (let g=0; g<3; g++) {
-                        const gx = 300 + g * (worldW-600)/3;
-                        lasers.push(new Laser(gx-100, y, 200, 5, ti, baseInt, off));
-                    }
-                } else {
-                    lasers.push(new Laser(0, y, W, 5, ti, baseInt, off));
-                }
+            // 生成激光 - 每关不同布局
+            lasers = []; 
+            const baseInt = Math.max(400, 1800 - lvl * 15);
+            
+            // 基于关卡数的伪随机种子
+            function seededRandom(seed) {
+                const x = Math.sin(seed) * 10000;
+                return x - Math.floor(x);
             }
-            // 纵向激光
-            const cols = Math.min(4, 1 + Math.floor(lvl/15));
-            for (let i=0; i<cols; i++) {
-                const x = isScrolling ? 200 + i*400 : 120 + i*120;
-                const ti = Math.min(4, Math.floor((lvl-1)/15) + i);
-                lasers.push(new Laser(x, 0, 5, H, ti, baseInt, i*300));
+            
+            // 普通关卡：生成多样化的激光布局
+            if (!isScrolling) {
+                // 决定本关激光模式 (0-5种不同模式)
+                const pattern = lvl % 6;
+                const laserCount = Math.min(8, 3 + Math.floor(lvl / 8));
+                
+                for (let i = 0; i < laserCount; i++) {
+                    const seed = lvl * 100 + i;
+                    const rand = seededRandom(seed);
+                    const rand2 = seededRandom(seed + 1);
+                    const rand3 = seededRandom(seed + 2);
+                    
+                    // 激光类型根据关卡和随机数决定
+                    const ti = Math.min(4, Math.floor(rand * 3) + Math.floor((lvl - 1) / 20));
+                    
+                    // 根据模式决定激光位置和方向
+                    if (pattern === 0) {
+                        // 模式0：横向激光，随机Y位置
+                        const y = 40 + Math.floor(rand * (H - 80) / 20) * 20;
+                        const width = rand2 > 0.5 ? W : Math.floor(rand2 * 300) + 100;
+                        const x = rand3 > 0.5 ? 0 : Math.floor(rand3 * (W - width));
+                        lasers.push(new Laser(x, y, width, 5, ti, baseInt, i * baseInt / 3));
+                    } else if (pattern === 1) {
+                        // 模式1：纵向激光，随机X位置
+                        const x = 40 + Math.floor(rand * (W - 80) / 20) * 20;
+                        const height = rand2 > 0.5 ? H : Math.floor(rand2 * 250) + 100;
+                        const y = rand3 > 0.5 ? 0 : Math.floor(rand3 * (H - height));
+                        lasers.push(new Laser(x, y, 5, height, ti, baseInt, i * baseInt / 3));
+                    } else if (pattern === 2) {
+                        // 模式2：横向+纵向混合
+                        if (i % 2 === 0) {
+                            const y = 60 + Math.floor(rand * (H - 120) / 30) * 30;
+                            lasers.push(new Laser(0, y, W, 5, ti, baseInt, i * baseInt / 4));
+                        } else {
+                            const x = 80 + Math.floor(rand * (W - 160) / 30) * 30;
+                            lasers.push(new Laser(x, 0, 5, H, ti, baseInt, i * baseInt / 4));
+                        }
+                    } else if (pattern === 3) {
+                        // 模式3：短激光墙阵列
+                        const rows = 3 + Math.floor(rand * 3);
+                        const y = 50 + (i % rows) * ((H - 100) / rows);
+                        const gapStart = Math.floor(rand * (W - 150));
+                        // 左侧激光
+                        lasers.push(new Laser(0, y, gapStart, 5, ti, baseInt, i * baseInt / 5));
+                        // 右侧激光
+                        lasers.push(new Laser(gapStart + 80, y, W - gapStart - 80, 5, ti, baseInt, i * baseInt / 5));
+                    } else if (pattern === 4) {
+                        // 模式4：阶梯式激光
+                        const x = 60 + (i * 60);
+                        const y = 40 + Math.floor(rand * (H - 150));
+                        const height = Math.min(H - y, 100 + Math.floor(rand2 * 150));
+                        lasers.push(new Laser(x, y, 5, height, ti, baseInt, i * baseInt / 3));
+                    } else {
+                        // 模式5：交叉网格（稀疏）
+                        if (i < 3) {
+                            const y = 60 + i * ((H - 120) / 3) + Math.floor(rand * 30);
+                            lasers.push(new Laser(0, y, W, 5, ti, baseInt, i * baseInt / 2));
+                        } else {
+                            const x = 100 + (i - 3) * ((W - 200) / 3) + Math.floor(rand * 30);
+                            lasers.push(new Laser(x, 0, 5, H, ti, baseInt, (i - 3) * baseInt / 2));
+                        }
+                    }
+                }
+            } else {
+                // 卷轴关卡激光生成
+                const groups = 3 + Math.floor((lvl - 20) / 10);
+                for (let g = 0; g < groups; g++) {
+                    const groupX = 300 + g * (worldW - 600) / groups;
+                    const patternType = (lvl + g) % 4;
+                    
+                    if (patternType === 0) {
+                        // 横向激光组
+                        for (let i = 0; i < 2; i++) {
+                            const y = 60 + i * ((H - 120) / 2);
+                            const ti = Math.min(4, Math.floor((lvl - 1) / 15) + i);
+                            lasers.push(new Laser(groupX - 100, y, 200, 5, ti, baseInt, (g * 2 + i) * 200));
+                        }
+                    } else if (patternType === 1) {
+                        // 纵向激光
+                        for (let i = 0; i < 2; i++) {
+                            const x = groupX + (i - 0.5) * 80;
+                            const ti = Math.min(4, Math.floor((lvl - 1) / 15) + i);
+                            lasers.push(new Laser(x, 0, 5, H, ti, baseInt, (g * 2 + i) * 200));
+                        }
+                    } else if (patternType === 2) {
+                        // 十字交叉
+                        const ti = Math.min(4, Math.floor((lvl - 1) / 15));
+                        lasers.push(new Laser(groupX - 100, H / 2 - 2, 200, 5, ti, baseInt, g * 300));
+                        lasers.push(new Laser(groupX - 2, 50, 5, H - 100, ti, baseInt, g * 300 + 150));
+                    } else {
+                        // 斜向短激光
+                        const y = 60 + Math.floor(seededRandom(lvl * 10 + g) * (H - 150));
+                        lasers.push(new Laser(groupX - 60, y, 120, 5, Math.min(4, Math.floor(lvl / 15)), baseInt, g * 250));
+                    }
+                }
             }
             
             // 生成炸弹 - 5关后才有
