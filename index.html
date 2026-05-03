@@ -500,32 +500,94 @@
 
         // ========== 10大阶段生成 ==========
 
-        // 阶段1：直线防线 - 静态开关激光，有通道 (1-10)
+        // 阶段1：新手入门 - 每关独立设计，逐步教学 (1-10)
         function genStage1(lvl, cw, ch, baseInt, maxType) {
-            const numKey = 2 + Math.min(2, Math.floor((lvl-1)/3));
-            const spacing = (cw - 160) / (numKey + 1);
-            const lvlOffset = (lvl - 1) * 17;
-
-            for (let i = 0; i < numKey; i++) {
-                const x = 80 + (i+1) * spacing;
-                const type = Math.min(maxType, Math.floor(i/2));
-                const passageY = 50 + ((lvlOffset + i * 31) % (ch - 100));
-                const passageH = Math.max(50, 80 - lvl * 2);
-                const off = i * 120;
-
-                const k1 = new Laser(x, 0, 5, passageY, type, baseInt, off);
-                k1.isKey = true; lasers.push(k1);
-                const k2 = new Laser(x, passageY + passageH, 5, ch - passageY - passageH, type, baseInt, off + baseInt/2);
-                k2.isKey = true; lasers.push(k2);
+            const bi = baseInt;
+            // 通道宽度（越大越简单）
+            const pw = (lv) => Math.max(45, 90 - lv * 5);
+            
+            switch(lvl) {
+                case 1:
+                    // 1道宽通道，慢速激光，正中间
+                    addKeyWall(cw*0.5, 0, ch, pw(1), 0, bi, 0);
+                    break;
+                case 2:
+                    // 2道激光，通道偏移不同位置
+                    addKeyWall(cw*0.35, 0, ch, pw(2), 0, bi, 0);
+                    addKeyWall(cw*0.65, 0, ch, pw(2), 0, bi*0.9, 100);
+                    break;
+                case 3:
+                    // 3道激光，通道在不同高度
+                    addKeyWall(cw*0.3, 0, ch, pw(3), 0, bi, 0);
+                    addKeyWall(cw*0.5, 0, ch, pw(3), 0, bi*0.9, 80);
+                    addKeyWall(cw*0.7, 0, ch, pw(3), 0, bi*0.8, 160);
+                    break;
+                case 4:
+                    // 2道墙 + 1条水平辅助激光
+                    addKeyWall(cw*0.4, 0, ch, pw(4), 0, bi, 0);
+                    addKeyWall(cw*0.65, 0, ch, pw(4), 0, bi*0.85, 120);
+                    lasers.push(new Laser(0, ch*0.5, cw*0.3, 4, 0, bi*1.4, 0));
+                    lasers.push(new Laser(cw*0.35, ch*0.5, cw*0.65, 4, 0, bi*1.4, bi/3));
+                    break;
+                case 5:
+                    // 3道墙 + 2条水平激光（形成Z字形）
+                    addKeyWall(cw*0.3, 0, ch, pw(5), 0, bi, 0);
+                    addKeyWall(cw*0.5, 0, ch, pw(5), 0, bi*0.85, 100);
+                    addKeyWall(cw*0.7, 0, ch, pw(5), 0, bi*0.8, 200);
+                    lasers.push(new Laser(0, ch*0.35, cw*0.25, 4, 0, bi*1.3, 0));
+                    lasers.push(new Laser(cw*0.75, ch*0.65, cw*0.25, 4, 0, bi*1.3, bi/2));
+                    break;
+                case 6:
+                    // 4道墙密集排列
+                    for (let i = 0; i < 4; i++) {
+                        addKeyWall(cw*(0.25 + i*0.18), 0, ch, pw(6), 0, bi*(1-i*0.05), i*90);
+                    }
+                    break;
+                case 7:
+                    // 3道宽墙 + 顶部/底部水平封锁
+                    addKeyWall(cw*0.35, 0, ch, pw(7), 0, bi, 0);
+                    addKeyWall(cw*0.55, 0, ch, pw(7), 0, bi*0.85, 80);
+                    addKeyWall(cw*0.75, 0, ch, pw(7), 0, bi*0.8, 160);
+                    lasers.push(new Laser(0, 0, cw, 4, 0, bi*1.2, 0));
+                    lasers.push(new Laser(0, ch-4, cw, 4, 0, bi*1.2, bi/2));
+                    break;
+                case 8:
+                    // 5道墙（第一次5墙），通道较窄
+                    for (let i = 0; i < 5; i++) {
+                        addKeyWall(cw*(0.2 + i*0.15), 0, ch, pw(8), 0, bi*(1-i*0.04), i*70);
+                    }
+                    break;
+                case 9:
+                    // 4道墙 + 3条水平激光交叉
+                    for (let i = 0; i < 4; i++) {
+                        addKeyWall(cw*(0.25 + i*0.17), 0, ch, pw(9), 0, bi*(1-i*0.05), i*80);
+                    }
+                    for (let i = 0; i < 3; i++) {
+                        const y = ch*(0.25 + i*0.25);
+                        lasers.push(new Laser(0, y, cw*0.4, 4, 0, bi*1.1, i*100));
+                        lasers.push(new Laser(cw*0.6, y, cw*0.4, 4, 0, bi*1.1, i*100+bi/3));
+                    }
+                    break;
+                case 10:
+                    // Boss关：5道墙 + 4条水平激光
+                    for (let i = 0; i < 5; i++) {
+                        addKeyWall(cw*(0.18 + i*0.16), 0, ch, pw(10), 0, bi*(1-i*0.04), i*60);
+                    }
+                    for (let i = 0; i < 4; i++) {
+                        const y = ch*(0.2 + i*0.2);
+                        lasers.push(new Laser(0, y, cw*0.35, 4, 0, bi*1.0, i*80));
+                        lasers.push(new Laser(cw*0.65, y, cw*0.35, 4, 0, bi*1.0, i*80+bi/4));
+                    }
+                    break;
             }
-
-            const numAux = Math.min(3, 1 + Math.floor((lvl-1)/4));
-            for (let i = 0; i < numAux; i++) {
-                const y = 60 + ((lvlOffset + i*37) % (ch - 120));
-                const gapX = 80 + ((lvlOffset + i*43) % (cw - 200));
-                lasers.push(new Laser(0, y, gapX, 4, Math.min(1, maxType), baseInt * 1.3, i*200));
-                lasers.push(new Laser(gapX + 70, y, cw - gapX - 70, 4, Math.min(1, maxType), baseInt * 1.3, i*200 + baseInt/3));
-            }
+        }
+        
+        function addKeyWall(x, y, ch, passageH, type, interval, offset) {
+            const pY = 40 + ((x * 7 + passageH) % (ch - passageH - 80));
+            const k1 = new Laser(x, y, 5, pY, type, interval, offset);
+            k1.isKey = true; lasers.push(k1);
+            const k2 = new Laser(x, pY + passageH, 5, ch - pY - passageH, type, interval, offset + interval/2);
+            k2.isKey = true; lasers.push(k2);
         }
 
         // 阶段2：移动激光 - 引入水平/垂直移动激光 (11-20)
